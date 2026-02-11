@@ -1,4 +1,4 @@
-package com.droneviewui;
+package com.ui.pages;
 import javafx.geometry.Insets;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import javafx.scene.paint.Color;
 import javafx.geometry.Pos;
+import com.ui.*;
 import javafx.scene.image.WritableImage;
 import javafx.embed.swing.*;
 import javafx.application.Platform;
@@ -30,7 +31,7 @@ public class CameraPage implements Page {
     // GENERAL
     // --------------
 
-    CameraPage(Data data) {
+    public CameraPage(Data data) {
         this.data = data;
         main = new HBox();
         main.setAlignment(Pos.CENTER);

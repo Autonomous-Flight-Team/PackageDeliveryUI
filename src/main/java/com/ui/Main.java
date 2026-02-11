@@ -1,4 +1,4 @@
-package com.droneviewui;
+package com.ui;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import com.ui.pages.*;
 
 public class Main extends Application {
     Page[] pages;
@@ -28,18 +29,18 @@ public class Main extends Application {
         data = new Data();
 
         // Load services
-        //ControlService controlService = new ControlService();
-        //TelemetryService telemetryService = new TelemetryService(data, controlService);
+        Control control = new TestControl(data);
+        TelemetryService telemetryService = new TelemetryService(data, control);
 
         // Start services
-        //telemetryService.start();
+        telemetryService.start();
 
         // Load styling
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         // Load pages
-        Page connectionPage = new ConnectionPage(data);
-        Page flightPage = new FlightPage(data);
+        Page connectionPage = new ConnectionPage(data, control);
+        Page flightPage = new FlightPage(data, control);
         Page cameraPage = new CameraPage(data);
 
         pages = new Page[3]; // Replace magic number (# of pages)

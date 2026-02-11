@@ -1,4 +1,4 @@
-package com.droneviewui;
+package com.ui.pages;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Button;
@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import javafx.scene.shape.Rectangle;
 import javafx.geometry.Insets;
+import com.ui.*;
 import javafx.geometry.Pos;
 import javafx.beans.binding.Bindings;
 import javafx.scene.image.Image;
@@ -20,6 +21,7 @@ public class FlightPage implements Page {
 
     private BorderPane main;
     private Data data;
+    private Control control;
     private Image mapImage;
 
 
@@ -27,8 +29,9 @@ public class FlightPage implements Page {
     // GENERAL
     // --------------
 
-    FlightPage(Data data) {
+    public FlightPage(Data data, Control control) {
         this.data = data;
+        this.control = control;
         main = new BorderPane();
 
         Pane stats = statsPanel();
@@ -75,12 +78,16 @@ public class FlightPage implements Page {
         VBox optionPane = new VBox(10);
         optionPane.setAlignment(Pos.CENTER);
 
-        // Create buttons
+        // Create buttons and logic
         Button armButton = new Button("ARM");
+        armButton.setOnAction(e -> control.tryArmDrone());
         Button returnButton = new Button("RTH");
+        returnButton.setOnAction(e -> control.tryReturnToHome());
         Button landButton = new Button("LAND");
+        landButton.setOnAction(e -> control.tryLand());
         Button killButton = new Button("KILL");
-
+        killButton.setOnAction(e -> control.tryKill());
+        
         // Button background logic
         armButton.backgroundProperty().bind(
             Bindings.createObjectBinding(

@@ -1,7 +1,5 @@
-package com.droneviewui;
+package com.ui;
 import javafx.beans.property.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import java.awt.image.BufferedImage;
 
 // Class for storing telemetry and drone data for other classes to access
@@ -36,11 +34,11 @@ public class Data {
     // Drone Kinematics
     private DoubleProperty DRONE_ALTITUDE = new SimpleDoubleProperty();
     private DoubleProperty DRONE_SPEED = new SimpleDoubleProperty();
-    private ListProperty<Integer> DRONE_POSITION_RELATIVE = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private ListProperty<Integer> DRONE_POSITION_GLOBAL = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private ListProperty<Integer> DRONE_ATTITUDE = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private ListProperty<Integer> DRONE_VELOCITY = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private ListProperty<Integer> DRONE_ACCELERATION = new SimpleListProperty<>(FXCollections.observableArrayList());
+    private Position DRONE_POSITION_RELATIVE = new Position();
+    private Position DRONE_POSITION_GLOBAL = new Position();
+    private Vector3 DRONE_ATTITUDE = new Vector3();
+    private Vector3 DRONE_VELOCITY = new Vector3();
+    private Vector3 DRONE_ACCELERATION = new Vector3();
 
     // Drone Battery
     private DoubleProperty DRONE_BAT_MAX_CAPACITY = new SimpleDoubleProperty();
@@ -144,25 +142,20 @@ public BooleanProperty healthPixhawkProperty() { return HEALTH_PIXHAWK; }
     public void setDroneSpeed(double value) { DRONE_SPEED.set(value); }
     public DoubleProperty droneSpeedProperty() { return DRONE_SPEED; }
 
-    public ObservableList<Integer> getDronePositionRelative() { return DRONE_POSITION_RELATIVE.get(); }
-    public void setDronePositionRelative(ObservableList<Integer> value) { DRONE_POSITION_RELATIVE.set(value); }
-    public ListProperty<Integer> dronePositionRelativeProperty() { return DRONE_POSITION_RELATIVE; }
+    public Position getDronePositionRelative() { return DRONE_POSITION_RELATIVE; }
+    public void setDronePositionRelative(Position value) { DRONE_POSITION_RELATIVE = value; }
 
-    public ObservableList<Integer> getDronePositionGlobal() { return DRONE_POSITION_GLOBAL.get(); }
-    public void setDronePositionGlobal(ObservableList<Integer> value) { DRONE_POSITION_GLOBAL.set(value); }
-    public ListProperty<Integer> dronePositionGlobalProperty() { return DRONE_POSITION_GLOBAL; }
+    public Position getDronePositionGlobal() { return DRONE_POSITION_GLOBAL; }
+    public void setDronePositionGlobal(Position value) { DRONE_POSITION_GLOBAL = value; }
 
-    public ObservableList<Integer> getDroneAttitude() { return DRONE_ATTITUDE.get(); }
-    public void setDroneAttitude(ObservableList<Integer> value) { DRONE_ATTITUDE.set(value); }
-    public ListProperty<Integer> droneAttitudeProperty() { return DRONE_ATTITUDE; }
+    public Vector3 getDroneAttitude() { return DRONE_ATTITUDE; }
+    public void setDroneAttitude(Vector3 value) { DRONE_ATTITUDE = value; }
 
-    public ObservableList<Integer> getDroneVelocity() { return DRONE_VELOCITY.get(); }
-    public void setDroneVelocity(ObservableList<Integer> value) { DRONE_VELOCITY.set(value); }
-    public ListProperty<Integer> droneVelocityProperty() { return DRONE_VELOCITY; }
+    public Vector3 getDroneVelocity() { return DRONE_VELOCITY; }
+    public void setDroneVelocity(Vector3 value) { DRONE_VELOCITY = value; }
 
-    public ObservableList<Integer> getDroneAcceleration() { return DRONE_ACCELERATION.get(); }
-    public void setDroneAcceleration(ObservableList<Integer> value) { DRONE_ACCELERATION.set(value); }
-    public ListProperty<Integer> droneAccelerationProperty() { return DRONE_ACCELERATION; }
+    public Vector3 getDroneAcceleration() { return DRONE_ACCELERATION; }
+    public void setDroneAcceleration(Vector3 value) { DRONE_ACCELERATION = value; }
 
     // Drone Battery
     public double getDroneBatMaxCapacity() { return DRONE_BAT_MAX_CAPACITY.get(); }

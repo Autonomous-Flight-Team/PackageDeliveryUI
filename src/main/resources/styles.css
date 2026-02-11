@@ -16,3 +16,20 @@
     -fx-padding: 12 24 12 24;
     -fx-cursor: hand;
 }
+
+.connect-field {
+    -fx-background-color: #b8b8b8;
+    -fx-text-fill: rgb(22, 22, 22);
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: transparent;
+    -fx-padding: 12 20;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #999999;
+}
+
+.connect-field:focused {
+    -fx-border-color: #4A4A4A;
+    -fx-text-fill: rgb(255, 255, 255);
+    -fx-border-width: 2;
+}

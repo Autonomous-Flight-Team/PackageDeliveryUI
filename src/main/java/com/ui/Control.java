@@ -1,9 +1,15 @@
-package com.droneviewui;
-import javafx.concurrent.Service;
+package com.ui;
 import java.awt.image.BufferedImage;
-import com.droneviewui.*;
 
-public abstract class ControlService extends Service<Void> {
+import org.json.simple.JSONObject;
+
+public abstract class Control {
+    private String controlType;
+    
+    public String getControlType() {
+        return controlType;
+    }
+
     // --------------
     // CONNECTION
     // --------------
@@ -28,7 +34,7 @@ public abstract class ControlService extends Service<Void> {
     // TELEMETRY
     // --------------
 
-    public abstract String getTelemetryUpdate(); // Update void with command format? Or overload? Research.
+    public abstract JSONObject getTelemetryUpdate(); // Update void with command format? Or overload? Research.
     public abstract Flight[] getAvailableFlights();
     public abstract BufferedImage getFrontCameraView();
     public abstract BufferedImage getBottomCameraView();
@@ -37,12 +43,14 @@ public abstract class ControlService extends Service<Void> {
     // HEALTH
     // --------------
 
-    public abstract boolean checkHeathGPS();
-    public abstract boolean checkHeathIMU();
-    public abstract boolean checkHeathRadio();
-    public abstract boolean checkHeathMotors();
-    public abstract boolean checkHeathBattery();
-    public abstract boolean checkHeathStorage();
-    public abstract boolean checkHeathLogging();
-    public abstract boolean checkHeathPixhawk();
+    public abstract void checkHeathGPS();
+    public abstract void checkHeathIMU();
+    public abstract void checkHeathRadio();
+    public abstract void checkHeathMotors();
+    public abstract void checkHeathBattery();
+    public abstract void checkHeathStorage();
+    public abstract void checkHeathLogging();
+    public abstract void checkHeathPixhawk();
+    public abstract void checkHeathCameras();
+    public abstract void checkHealthAll();
 }

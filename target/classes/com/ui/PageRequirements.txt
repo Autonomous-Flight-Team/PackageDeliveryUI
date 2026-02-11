@@ -1,0 +1,76 @@
+Connection Page -
+Should have functionality for setting radio BAUD and PORT
+Actions:
+Connect to drone, Run health checks once connected. Hold DRONE_READY status until checks completed.
+Should also req a state update from the drone prior to any checks.
+Establish socket ports in state vars? How should this be ambiguous? - use control interface for all connection.
+Should be able set the location for telemetry saves. Maybe name the drone from the panel?
+
+BorderPane = Left is a VBox for setting values and starting connection. Center is a grid of go/dego values.
+Right is a telemetry save selection and client params? Should also be flight selection!
+
+List of health checks:
+Battery voltage is below BATT_ARM_VOLT
+GPS - Any GPS issue is present
+Gyro - Any issue
+Accelerometer - Any issue
+Logging - Any issue
+SD Card - Missing or corrupted
+Radio - Connection outside of acceptable parameters
+
+Review Page -
+Telemetry playback. Mirror the flight page but with a different set of controls and an emulation of the Data page.
+
+Camera Page -
+Dual displays of camera (one for the front, one for the bottom.)
+Label above each panel, and a square image play for the video frames that are pulled. Need to be decoded 
+in H.265, stored in a video outstream (written out to the telemetry file), and also written to an imagebuffer to write.
+See claude page for methodology.
+
+Telemetry Page -
+A grid with every telemetry icon display visibile? Should be configurable in some manner.
+
+Configuration -
+Run tests. Standard battery of programs. Dispatch commands to the drone and run the tests in the local distribution there.
+Should be able to call for a list of programs and their respective catagories from the drone. Display these dynamically in a side bar
+with a button to run, a title, and a description of the command.
+
+Flight -
+As implemented.
+
+
+System updates - 
+Services - JavaFX runs its GUI service that updates the display, from the data page.
+To connect to the drone, a telemetry service needs to run. It should facilitate updates, and serve as the
+middleman between the client code and the control class.
+
+What needs to be implemented -
+A broad update. This is done when connecting to the drone, and updates all telemetry, state, and info class
+variables.
+A state update function. Get the state of the drone, and monitor stuff.
+Health update - run checks and verify status.
+Telemetry update - get a regular telemetry blip and update the data.
+
+
+Types of data to get from the drone.
+Telemetry class -
+Stuff like altitude, speed, and so forth.
+
+State class -
+Stuff like is the drone armed? Are certain health checks passed?
+
+Info class -
+Stuff like what are the available flight plans? What is the name of the drone?
+
+
+Types of data to send to the drone.
+Commands -
+Start flight, arm, run tests, etc.
+
+Configuration -
+Change the drone name, adjust minimum battery fail voltage, and so forth.
+
+
+Todos:
+Get a control test interface up so that I can setup flight testing and actually add button functionality.
+This means getting gazebo integration up and running.

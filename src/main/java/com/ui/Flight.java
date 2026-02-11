@@ -1,4 +1,4 @@
-package com.droneviewui;
+package com.ui;
 
 public class Flight {
     private String flightName;

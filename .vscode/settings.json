@@ -14,5 +14,6 @@
         "lib/jdk.jsobject.jar",
         "lib/jfx.incubator.input.jar",
         "lib/jfx.incubator.richtext.jar"
-    ]
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
