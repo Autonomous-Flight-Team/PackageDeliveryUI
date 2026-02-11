@@ -7,7 +7,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import javafx.application.Platform;
 
-public class TestControl extends Control {
+public class TestControl extends ControlService {
     private Data data;
     private String controlType = "Test";
 
@@ -110,7 +110,7 @@ public class TestControl extends Control {
 
     public void checkHeathGPS() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(60);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }
@@ -120,7 +120,7 @@ public class TestControl extends Control {
 
     public void checkHeathIMU() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(240);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }
@@ -130,7 +130,7 @@ public class TestControl extends Control {
 
     public void checkHeathRadio() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(220);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }
@@ -150,7 +150,7 @@ public class TestControl extends Control {
 
     public void checkHeathBattery() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(180);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }
@@ -160,7 +160,7 @@ public class TestControl extends Control {
 
     public void checkHeathStorage() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(160);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }
@@ -170,7 +170,7 @@ public class TestControl extends Control {
 
     public void checkHeathLogging() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(140);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }
@@ -180,7 +180,7 @@ public class TestControl extends Control {
 
     public void checkHeathPixhawk() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(120);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }
@@ -190,7 +190,7 @@ public class TestControl extends Control {
 
     public void checkHeathCameras() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }

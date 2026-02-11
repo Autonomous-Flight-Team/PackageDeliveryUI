@@ -7,10 +7,10 @@ import javafx.concurrent.*;
 public class TelemetryService extends Service<Void> {
     private final static int POLLING_RATE = 100; //ms
     Data data;
-    Control control;
+    ControlService control;
     private boolean firstUpdate;
 
-    public TelemetryService(Data data, Control control) {
+    public TelemetryService(Data data, ControlService control) {
         this.data = data;
         this.control = control;
         firstUpdate = true;

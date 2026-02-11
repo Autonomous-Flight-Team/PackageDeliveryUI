@@ -21,7 +21,7 @@ public class FlightPage implements Page {
 
     private BorderPane main;
     private Data data;
-    private Control control;
+    private ControlService control;
     private Image mapImage;
 
 
@@ -29,7 +29,7 @@ public class FlightPage implements Page {
     // GENERAL
     // --------------
 
-    public FlightPage(Data data, Control control) {
+    public FlightPage(Data data, ControlService control) {
         this.data = data;
         this.control = control;
         main = new BorderPane();
