@@ -8,6 +8,7 @@ com/ui/Flight.class
 com/ui/CommandService$1.class
 com/ui/CommandService$7.class
 com/ui/pages/ConfigurationPage.class
+com/ui/Launcher.class
 com/ui/CommandService$9.class
 com/ui/lib/Position.class
 com/ui/CommandService$4.class

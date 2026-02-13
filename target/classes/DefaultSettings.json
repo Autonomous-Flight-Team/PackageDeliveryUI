@@ -3,13 +3,11 @@
     "pollRate": 100,
     "address": "drone.net",
     "port": 10,
-    "saveLocation": "/telemetry/",
     "cameraStream": false,
     "cameraResX": 480,
     "cameraResY": 360
   },
   "system": {
-    "logSaveLocation": "/logs/",
     "mapResX": 360,
     "testMode": false
   }
