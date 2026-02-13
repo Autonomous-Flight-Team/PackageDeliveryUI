@@ -1,2 +1,3 @@
-lib/
-*.jar
+lib/*.jar
+target/**
+dist/*

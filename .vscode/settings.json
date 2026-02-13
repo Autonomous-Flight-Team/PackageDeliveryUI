@@ -15,5 +15,5 @@
         "lib/jfx.incubator.input.jar",
         "lib/jfx.incubator.richtext.jar"
     ],
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

@@ -15,10 +15,12 @@ public class CommandService {
     private final ExecutorService executor = Executors.newFixedThreadPool(5);
     private Control control;
     private Data data;
+    private Logging logging;
 
-    public CommandService(Data data, Control control) {
+    public CommandService(Data data, Control control, Logging logging) {
         this.control = control;
         this.data = data;
+        this.logging = logging;
     }
 
     public void stop() {
@@ -46,17 +48,18 @@ public class CommandService {
         Task<Void> connectTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Connecting to drone");
                 control.tryConnectToDrone();
                 return null;
             }
         };
 
         connectTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Connected to drone");
         });
 
         connectTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Failed to connect to drone");
         });
 
         executor.submit(connectTask);
@@ -70,17 +73,18 @@ public class CommandService {
         Task<Void> armTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Arming drone");
                 control.tryArmDrone();
                 return null;
             }
         };
 
         armTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Drone armed");
         });
 
         armTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Drone failed to arm");
         });
 
         executor.submit(armTask);
@@ -90,17 +94,18 @@ public class CommandService {
         Task<Void> disarmTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Disarming drone");
                 control.tryDisarmDrone();
                 return null;
             }
         };
 
         disarmTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Drone disarmed");
         });
 
         disarmTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Drone failed to disarm");
         });
 
         executor.submit(disarmTask);
@@ -110,17 +115,18 @@ public class CommandService {
         Task<Void> startFlightTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Starting flight");
                 control.tryStartFlight();
                 return null;
             }
         };
 
         startFlightTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Flight started");
         });
 
         startFlightTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Failed to start flight");
         });
 
         executor.submit(startFlightTask);
@@ -130,17 +136,18 @@ public class CommandService {
         Task<Void> returnTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Returning drone to home");
                 control.tryReturnToHome();
                 return null;
             }
         };
 
         returnTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Drone returning to home");
         });
 
         returnTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Drone failed to initate return to home");
         });
 
         executor.submit(returnTask);
@@ -150,17 +157,18 @@ public class CommandService {
         Task<Void> landTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Drone landing");
                 control.tryLand();
                 return null;
             }
         };
 
         landTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Drone initiated landing");
         });
 
         landTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Drone failed to initiate landing");
         });
 
         executor.submit(landTask);
@@ -170,17 +178,18 @@ public class CommandService {
         Task<Void> killTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Killing drone");
                 control.tryKill();
                 return null;
             }
         };
 
         killTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Drone killed");
         });
 
         killTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Failed to kill drone");
         });
 
         executor.submit(killTask);
@@ -195,17 +204,18 @@ public class CommandService {
         Task<Void> killTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Updating flight registry");
                 Platform.runLater(() -> {data.setAvailableFlights(control.getAvailableFlights());} );
                 return null;
             }
         };
 
         killTask.setOnSucceeded(e -> {
-            // TODO: Logging
+            logging.logInfo("Flights updated");
         });
 
         killTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Failed to update flights");
         });
 
         executor.submit(killTask);
@@ -220,17 +230,18 @@ public class CommandService {
         Task<Void> healthCheckTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                logging.logCommand("Running all health checks");
                 control.checkHealthAll();
                 return null;
             }
         };
 
         healthCheckTask.setOnSucceeded(e -> {
-            // TODO: Logging function
+            logging.logInfo("Health checks started");
         });
         
         healthCheckTask.setOnFailed(e -> {
-            // TODO: Logging function
+            logging.logError("Failed to start health checks");
         });
 
         executor.submit(healthCheckTask);

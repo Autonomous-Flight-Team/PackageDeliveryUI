@@ -17,8 +17,10 @@ public class Main extends Application {
     IntegerProperty activePage = new SimpleIntegerProperty(0);
     
     Settings settings;
+    Logging logging;
     Data data;
     Control control;
+    FileManager fileManager;
 
     TelemetryService telemetryService;
     CommandService commandService;
@@ -31,15 +33,16 @@ public class Main extends Application {
         stage.setTitle("Husky DroneView 0.1");
         stage.setScene(scene);
 
-
         // Load systems
-        settings = new Settings();
+        fileManager = new FileManager();
+        logging = new Logging(fileManager);
+        settings = new Settings(fileManager);
         data = new Data();
         control = new TestControl(data);
 
         // Load services
         telemetryService = new TelemetryService(data, control);
-        commandService = new CommandService(data, control);
+        commandService = new CommandService(data, control, logging);
 
         // Start services
         telemetryService.start();
@@ -65,7 +68,7 @@ public class Main extends Application {
         // Load start page
         selectPage(0);
         
-        // Show scene
+        // Show scenes
         stage.show();
     }
 
@@ -74,6 +77,7 @@ public class Main extends Application {
         telemetryService.stop();
         commandService.stop();
         settings.stop();
+        logging.stop();
         
         super.stop(); // Call parent implementation
     }
