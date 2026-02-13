@@ -1,47 +1,57 @@
 package com.ui;
 import org.json.simple.JSONObject;
 
-import javafx.application.Platform;
-import javafx.concurrent.*;
+import com.ui.lib.Position;
+import com.ui.lib.Vector3;
 
-public class TelemetryService extends Service<Void> {
+import javafx.application.Platform;
+
+public class TelemetryService {
     private final static int POLLING_RATE = 100; //ms
     Data data;
-    ControlService control;
-    private boolean firstUpdate;
+    Control control;
+    private Thread telemetryThread;
 
-    public TelemetryService(Data data, ControlService control) {
+    public TelemetryService(Data data, Control control) {
         this.data = data;
         this.control = control;
-        firstUpdate = true;
     }
 
-    @Override
-    protected Task<Void> createTask() {
-        return new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                while(!isCancelled()) {
-                    if(data.isConnectedToDrone()) {
-                        if(firstUpdate) {
-                            Platform.runLater(() -> data.setAvailableFlights(control.getAvailableFlights()));
+    public void start() {
+        System.out.println("Thread start call");
+        telemetryThread = new Thread(() -> {
+            boolean firstUpdate = true;
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    
+                    if (data.isConnectedToDrone()) {
+                        if (firstUpdate) {
+                            Platform.runLater(() -> data.setAvailableFlights(control.getAvailableFlights())); // Update flight info
                             firstUpdate = false;
                         }
-
+                        
                         updateData(control.getTelemetryUpdate());
-
-                        Platform.runLater(() -> {
-                            data.setBottomFrame(control.getBottomCameraView());
-                            data.setFrontFrame(control.getFrontCameraView()); 
-                        });
-
-                        Thread.sleep(POLLING_RATE);
+                        
+                        // Platform.runLater(() -> {
+                        //     data.setBottomFrame(control.getBottomCameraView());
+                        //     data.setFrontFrame(control.getFrontCameraView());
+                        // });
                     }
+                    
+                    Thread.sleep(POLLING_RATE);
+                } catch (InterruptedException e) {
+                    System.out.println("TELEM THREAD INTERUP");
+                    Thread.currentThread().interrupt();
+                    break;
                 }
-                return null;
             }
-        };
-    };
+        });
+        telemetryThread.start();
+    }
+
+    public void stop() {
+        telemetryThread.interrupt();
+    }
 
     private void updateData(JSONObject telemetryData) {
         // Data types

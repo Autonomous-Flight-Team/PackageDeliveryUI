@@ -11,10 +11,17 @@ import javafx.beans.property.SimpleIntegerProperty;
 import com.ui.pages.*;
 
 public class Main extends Application {
-    Page[] pages;
     BorderPane main;
-    Data data;
+
+    Page[] pages;
     IntegerProperty activePage = new SimpleIntegerProperty(0);
+    
+    Settings settings;
+    Data data;
+    Control control;
+
+    TelemetryService telemetryService;
+    CommandService commandService;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -26,11 +33,13 @@ public class Main extends Application {
 
 
         // Load systems
+        settings = new Settings();
         data = new Data();
+        control = new TestControl(data);
 
         // Load services
-        Control control = new TestControl(data);
-        TelemetryService telemetryService = new TelemetryService(data, control);
+        telemetryService = new TelemetryService(data, control);
+        commandService = new CommandService(data, control);
 
         // Start services
         telemetryService.start();
@@ -39,14 +48,16 @@ public class Main extends Application {
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         // Load pages
-        Page connectionPage = new ConnectionPage(data, control);
-        Page flightPage = new FlightPage(data, control);
-        Page cameraPage = new CameraPage(data);
+        Page connectionPage = new ConnectionPage(data, control, commandService);
+        Page configurationPage = new ConfigurationPage(data, commandService);
+        Page flightPage = new FlightPage(data, commandService);
+        Page cameraPage = new CameraPage(data,commandService);
 
-        pages = new Page[3]; // Replace magic number (# of pages)
+        pages = new Page[4]; // Replace magic number (# of pages)
         pages[0] = connectionPage;
-        pages[1] = flightPage;
-        pages[2] = cameraPage;
+        pages[1] = configurationPage;
+        pages[2] = flightPage;
+        pages[3] = cameraPage;
 
         // Main pane setup
         main.setTop(navbar());
@@ -58,10 +69,15 @@ public class Main extends Application {
         stage.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-        System.out.println("Test");
+    @Override
+    public void stop() throws Exception {
+        telemetryService.stop();
+        commandService.stop();
+        settings.stop();
+        
+        super.stop(); // Call parent implementation
     }
+
 
     private void selectPage(int pageIndex) {
         activePage.set(pageIndex);
@@ -86,7 +102,7 @@ public class Main extends Application {
 
         Button navbarButtons[] = {
             new Button("Connection"),
-            new Button("Calibration"),
+            new Button("Configuration"),
             new Button("Review"),
             new Button("Flight"),
             new Button("Telemetry"),
@@ -107,6 +123,14 @@ public class Main extends Application {
                                 Color.web("#313131"), 
                                 new CornerRadii(8), null)),
                                 activePage ));
+
+            navbarButtons[index].styleProperty().bind(
+                    Bindings.createObjectBinding(
+                            () -> activePage.get() == index 
+                                ? "-fx-text-fill: #232323"
+                                : "-fx-text-fill: #eeeeee",
+                                activePage));
+
 
             navbarButtons[index].getStyleClass().add("toolbar-button");
 

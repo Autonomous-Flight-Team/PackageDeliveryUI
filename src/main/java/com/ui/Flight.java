@@ -1,5 +1,7 @@
 package com.ui;
 
+import com.ui.lib.Position;
+
 public class Flight {
     private String flightName;
     private String flightDescription;

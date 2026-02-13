@@ -1,0 +1,22 @@
+There are three services that run.
+These are -
+    Telemetry
+    Command
+    GUI
+
+The GUI thread manages the JavaFX display components, and interface interaction. This should never be interupted.
+The Telemetry thread manages requesting drone telemetry, if connected, every 10th of a second.
+The Command thread manages sending commands to the drone, that the GUI calls.
+
+There are intermediate classes that these threads access.
+These are -
+    Data
+    Control
+
+All threads can access data normally, but must use Platform.runLater to set data, in order to maintain thread safety.
+All threads can access control normally, but only Command and Data should be running control functions, as only they are directly acessing dron data.
+The GUI should send commands and get info from data.
+The Command thread should run control functions and update data accordingly.
+The Telemetry thread should run control functions and update data accordingly.
+
+The GUI will be bound to the data properties, and will thus not need to actively update when data changes.

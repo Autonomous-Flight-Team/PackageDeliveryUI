@@ -21,7 +21,7 @@ public class FlightPage implements Page {
 
     private BorderPane main;
     private Data data;
-    private ControlService control;
+    private CommandService command;
     private Image mapImage;
 
 
@@ -29,20 +29,19 @@ public class FlightPage implements Page {
     // GENERAL
     // --------------
 
-    public FlightPage(Data data, ControlService control) {
+    public FlightPage(Data data, CommandService command) {
         this.data = data;
-        this.control = control;
+        this.command = command;
         main = new BorderPane();
 
         Pane stats = statsPanel();
-        Pane status = statusPanel();
         Pane options = optionPanel();
         Pane map = mapPanel();
 
         main.setRight(stats);
-        main.setBottom(status);
         main.setCenter(options);
         main.setLeft(map);
+        main.setStyle("-fx-background-color: #d7d7d3;");
     }
 
     public Pane getPane() {
@@ -54,14 +53,18 @@ public class FlightPage implements Page {
     // --------------
 
     private StackPane mapPanel() {
+        StackPane mapPanel = new StackPane();
+        Rectangle background = new Rectangle(395, 405, Color.web("#e7e7e7"));
+        background.setArcHeight(30);
+        background.setArcWidth(30);
         // TODO functionality: pull position data to get imagery from google maps, used center,
         // dir, xwidth and ywidth to place the drone icons. Placehold locations for now - build out 
         // placement functionality in modules
         mapImage = new Image("Images/mapUnavailable.png");
         ImageView mapView = new ImageView();
         mapView.setImage(mapImage);
-        mapView.setFitWidth(390);
-        mapView.setFitHeight(390);
+        mapView.setFitWidth(360);
+        mapView.setFitHeight(380);
 
         //Image droneIcon = new Image("Images/droneIcon.png");
         //Image homeIcon = new Image("Images/droneIcon.png");
@@ -70,84 +73,126 @@ public class FlightPage implements Page {
         StackPane mapStack = new StackPane();
 
         mapStack.getChildren().add(mapView);
-        mapStack.setPadding(new Insets(10, 20, 0, 20));
-        return mapStack;
+        mapPanel.setPadding(new Insets(10, 20, 0, 25));
+        mapPanel.getChildren().addAll(background, mapStack);
+        return mapPanel;
     }
 
-    private VBox optionPanel() {
+    private Pane optionPanel() {
+        StackPane optionPanel = new StackPane();
+        Rectangle background = new Rectangle(190, 395, Color.web("#e7e7e7"));
+        background.setArcHeight(30);
+        background.setArcWidth(30);
+
         VBox optionPane = new VBox(10);
         optionPane.setAlignment(Pos.CENTER);
 
         // Create buttons and logic
         Button armButton = new Button("ARM");
-        armButton.setOnAction(e -> control.tryArmDrone());
+        armButton.setOnAction(e -> command.tryArmDroneAsync());
+        Button flyButton = new Button("FLY");
+        flyButton.setOnAction(e -> command.startFlightAsync());
         Button returnButton = new Button("RTH");
-        returnButton.setOnAction(e -> control.tryReturnToHome());
+        returnButton.setOnAction(e -> command.returnHomeAsync());
         Button landButton = new Button("LAND");
-        landButton.setOnAction(e -> control.tryLand());
+        landButton.setOnAction(e -> command.landAsync());
         Button killButton = new Button("KILL");
-        killButton.setOnAction(e -> control.tryKill());
+        killButton.setOnAction(e -> command.killAsync());
         
-        // Button background logic
         armButton.backgroundProperty().bind(
-            Bindings.createObjectBinding(
-                () -> data.droneArmedProperty().get() == true 
-                    ? new Background(new BackgroundFill(
+            Bindings.when(data.connectedToDroneProperty())
+                    .then(new Background(new BackgroundFill(
+                    Color.web("#8aaae5"), 
+                    new CornerRadii(8), null)))
+                    .otherwise(new Background(new BackgroundFill(
                     Color.web("#232323"), 
-                    new CornerRadii(8), null))
-                    : new Background(new BackgroundFill(
-                    Color.web("#5481d4"), 
                     new CornerRadii(8), null))));
-        
+
+        armButton.styleProperty().bind(
+            Bindings.when(data.connectedToDroneProperty())
+                    .then("-fx-text-fill: #232323")
+                    .otherwise("-fx-text-fill: #f3f3f3"));
+
+        flyButton.backgroundProperty().bind(
+            Bindings.when(data.droneArmedProperty())
+                    .then(new Background(new BackgroundFill(
+                    Color.web("#c998ee"), 
+                    new CornerRadii(8), null)))
+                    .otherwise(new Background(new BackgroundFill(
+                    Color.web("#232323"), 
+                    new CornerRadii(8), null))));
+
+        flyButton.styleProperty().bind(
+            Bindings.when(data.droneArmedProperty())
+                    .then("-fx-text-fill: #232323")
+                    .otherwise("-fx-text-fill: #f3f3f3"));
 
         returnButton.backgroundProperty().bind(
-            Bindings.createObjectBinding(
-                () -> data.droneArmedProperty().get() == true 
-                    ? new Background(new BackgroundFill(
-                    Color.web("#d3d757"), 
-                    new CornerRadii(8), null))
-                    : new Background(new BackgroundFill(
+            Bindings.when(data.droneInFlightProperty())
+                    .then(new Background(new BackgroundFill(
+                    Color.web("#ffff6f"), 
+                    new CornerRadii(8), null)))
+                    .otherwise(new Background(new BackgroundFill(
                     Color.web("#232323"), 
                     new CornerRadii(8), null))));
+
+        returnButton.styleProperty().bind(
+            Bindings.when(data.droneInFlightProperty())
+                    .then("-fx-text-fill: #232323")
+                    .otherwise("-fx-text-fill: #f3f3f3"));
 
         landButton.backgroundProperty().bind(
-            Bindings.createObjectBinding(
-                () -> data.droneArmedProperty().get() == true 
-                    ? new Background(new BackgroundFill(
-                    Color.web("#d7a257"), 
-                    new CornerRadii(8), null))
-                    : new Background(new BackgroundFill(
+            Bindings.when(data.droneInFlightProperty())
+                    .then(new Background(new BackgroundFill(
+                    Color.web("#dcb064"), 
+                    new CornerRadii(8), null)))
+                    .otherwise(new Background(new BackgroundFill(
                     Color.web("#232323"), 
                     new CornerRadii(8), null))));
 
+        landButton.styleProperty().bind(
+            Bindings.when(data.droneInFlightProperty())
+                    .then("-fx-text-fill: #232323")
+                    .otherwise("-fx-text-fill: #f3f3f3"));
+
         killButton.backgroundProperty().bind(
-            Bindings.createObjectBinding(
-                () -> data.droneArmedProperty().get() == true 
-                    ? new Background(new BackgroundFill(
-                    Color.web("#d76057"), 
-                    new CornerRadii(8), null))
-                    : new Background(new BackgroundFill(
+            Bindings.when(data.connectedToDroneProperty())
+                    .then(new Background(new BackgroundFill(
+                    Color.web("#e67b73"), 
+                    new CornerRadii(8), null)))
+                    .otherwise(new Background(new BackgroundFill(
                     Color.web("#232323"), 
                     new CornerRadii(8), null))));
+
+        killButton.styleProperty().bind(
+            Bindings.when(data.connectedToDroneProperty())
+                    .then("-fx-text-fill: #232323")
+                    .otherwise("-fx-text-fill: #f3f3f3"));
 
                 
         // Style buttons
         armButton.getStyleClass().addAll("flight-option-button", "flight-option-button-unavailable");
+        flyButton.getStyleClass().addAll("flight-option-button", "flight-option-button-unavailable");
         returnButton.getStyleClass().addAll("flight-option-button", "flight-option-button-unavailable");
         landButton.getStyleClass().addAll("flight-option-button", "flight-option-button-unavailable");
         killButton.getStyleClass().addAll("flight-option-button", "flight-option-button-unavailable");
         
-        optionPane.getChildren().addAll(armButton, returnButton, landButton, killButton);
-
-        return optionPane;
+        optionPane.getChildren().addAll(armButton, flyButton, returnButton, landButton, killButton);
+        optionPanel.getChildren().addAll(background, optionPane);
+        return optionPanel;
     }
 
-    private GridPane statsPanel() {
+    private Pane statsPanel() {
+        StackPane statsPanel = new StackPane();
+        Rectangle background = new Rectangle(345, 420, Color.web("#e7e7e7"));
+        background.setArcHeight(30);
+        background.setArcWidth(30);
+
         // Object creation
 
-        GridPane statsPanel = new GridPane();
-        statsPanel.setAlignment(Pos.CENTER);
-        statsPanel.setPadding(new Insets(20));
+        GridPane statsGrid = new GridPane();
+        statsGrid.setAlignment(Pos.CENTER);
+        statsPanel.setPadding(new Insets(25));
 
         Label altitudeLabel = statText("");
         altitudeLabel.textProperty().bind(
@@ -199,45 +244,22 @@ public class FlightPage implements Page {
 
         // Insert into grid
 
-        statsPanel.add(statStack(altitudeLabel, 1, 1), 0, 0);
-        statsPanel.add(statStack(speedLabel, 1, 1), 1, 0);
-        statsPanel.add(statStack(batteryLabel, 1, 1), 0, 1);
-        statsPanel.add(statStack(fullBatteryLabel, 1, 1), 1, 1);
-        statsPanel.add(statStack(statusLabel, 2.1, 1), 0, 2, 2, 1);
-        statsPanel.add(statStack(payloadStatus, 2.1, 1), 0, 3, 2, 1);
-        statsPanel.add(statStack(flightTime, 2.1, 1), 0, 4, 2, 1);
-        statsPanel.add(statStack(speed, 1, 1), 1, 5); //
-        statsPanel.add(statStack(distToTarget, 1, 1), 0, 5); //
+        statsGrid.add(statStack(altitudeLabel, 1, 1), 0, 0);
+        statsGrid.add(statStack(speedLabel, 1, 1), 1, 0);
+        statsGrid.add(statStack(batteryLabel, 1, 1), 0, 1);
+        statsGrid.add(statStack(fullBatteryLabel, 1, 1), 1, 1);
+        statsGrid.add(statStack(statusLabel, 2.1, 1), 0, 2, 2, 1);
+        statsGrid.add(statStack(payloadStatus, 2.1, 1), 0, 3, 2, 1);
+        statsGrid.add(statStack(flightTime, 2.1, 1), 0, 4, 2, 1);
+        statsGrid.add(statStack(speed, 1, 1), 1, 5); //
+        statsGrid.add(statStack(distToTarget, 1, 1), 0, 5); //
 
-        statsPanel.setHgap(7.5);
-        statsPanel.setVgap(7.5);
+        statsGrid.setHgap(7.5);
+        statsGrid.setVgap(7.5);
+
+        statsPanel.getChildren().addAll(background, statsGrid);
 
         return statsPanel;
-    }
-
-    // Generate the status panel - the bottom status panel
-    private Pane statusPanel() {
-        HBox status = new HBox();
-
-        StackPane connectionPane = new StackPane();
-        Rectangle connectionBg = new Rectangle(300, 50, Color.DARKKHAKI);
-        connectionBg.setArcWidth(10);
-        connectionBg.setArcHeight(10);
-
-        Label connectionStatus = new Label("");
-        connectionStatus.textProperty().bind(
-            Bindings.when(data.connectedToDroneProperty())
-            .then("Connection Status: Connected")
-            .otherwise("Connection Status: Disconnected")
-        );
-        connectionStatus.setFont(new Font(20));
-        connectionStatus.setTextFill(Color.WHITE);
-
-        status.setAlignment(javafx.geometry.Pos.CENTER);
-        connectionPane.getChildren().addAll(connectionBg, connectionStatus);
-        status.getChildren().add(connectionPane);
-        status.setPadding(new Insets(10));
-        return status;
     }
 
     // --------------
@@ -261,7 +283,7 @@ public class FlightPage implements Page {
     // an integer multiple of the default 1x1 button height and width.
     // For the stats panel.
     private StackPane statStack(Label text, double spanX, double spanY) {
-        Rectangle statBackground = new Rectangle(spanX * 180, spanY * 60, Color.DIMGRAY);
+        Rectangle statBackground = new Rectangle(spanX * 150, spanY * 60, Color.web("#373737"));
         
         statBackground.setArcWidth(10);
         statBackground.setArcHeight(10);

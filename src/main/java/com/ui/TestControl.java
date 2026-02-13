@@ -3,11 +3,17 @@ import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import com.ui.lib.Position;
+
 import javafx.application.Platform;
 
-public class TestControl extends ControlService {
+public class TestControl extends Control {
     private Data data;
     private String controlType = "Test";
 
@@ -28,7 +34,7 @@ public class TestControl extends ControlService {
 
     public boolean tryConnectToDrone() {
         checkHealthAll();
-        data.setConnectedToDrone(true);
+        Platform.runLater(() -> data.setConnectedToDrone(true));
         return true;
     }
 
@@ -44,22 +50,29 @@ public class TestControl extends ControlService {
     public boolean tryDisarmDrone() {
         Platform.runLater(() -> data.setFlightStatus("Unarmed"));
         Platform.runLater(() -> data.setDroneArmed(false));
+        Platform.runLater(() -> data.setDroneInFlight(false));
         return true;
     }
     public boolean tryStartFlight() {
         Platform.runLater(() -> data.setFlightStatus("Taking Off"));
+        Platform.runLater(() -> data.setDroneInFlight(true));
+
         return true;
     }
     public boolean tryReturnToHome() {
         Platform.runLater(() -> data.setFlightStatus("Returning to Home"));
+        Platform.runLater(() -> data.setDroneInFlight(false));
         return true;
     }
     public boolean tryLand() {
         Platform.runLater(() -> data.setFlightStatus("Landing"));
+        Platform.runLater(() -> data.setDroneInFlight(false));
         return true;
     }
     public boolean tryKill() {
         Platform.runLater(() -> data.setFlightStatus("Unarmed"));
+        Platform.runLater(() -> data.setDroneArmed(false));
+        Platform.runLater(() -> data.setDroneInFlight(false));
         return true;
     }
 
@@ -72,9 +85,11 @@ public class TestControl extends ControlService {
         JSONObject obj = new JSONObject();
         
         try {
-            FileReader jsonFile = new FileReader("TelemetryStandard.json");
+            InputStream inputStream = getClass().getResourceAsStream("/TelemetryStandard.json");
+            InputStreamReader reader = new InputStreamReader(inputStream);
+            
             try{ 
-                obj = (JSONObject) parser.parse(jsonFile); 
+                obj = (JSONObject) parser.parse(reader); 
             } catch (org.json.simple.parser.ParseException e) {
                 System.out.println("Failed to parse JSON file.");
             }
@@ -89,6 +104,7 @@ public class TestControl extends ControlService {
 
     // Update void with command format? Or overload? Research.
     public Flight[] getAvailableFlights() {
+        System.out.println("TEST FLIGHTS ADD");
         Flight[] flights = new Flight[1];
         Position[] waypoints = new Position[1];
         waypoints[0] = new Position();
@@ -110,7 +126,7 @@ public class TestControl extends ControlService {
 
     public void checkHeathGPS() {
         try {
-            Thread.sleep(60);
+            Thread.sleep(600);
         } catch (InterruptedException e) {
             System.out.println("Sleep interrupted");
         }

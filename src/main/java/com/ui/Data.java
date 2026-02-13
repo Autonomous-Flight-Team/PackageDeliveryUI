@@ -2,6 +2,9 @@ package com.ui;
 import javafx.beans.property.*;
 import java.awt.image.BufferedImage;
 
+import com.ui.lib.Position;
+import com.ui.lib.Vector3;
+
 // Class for storing telemetry and drone data for other classes to access
 public class Data {
     // --------------
@@ -84,7 +87,7 @@ public class Data {
     public IntegerProperty selectedFlightProperty() { return SELECTED_FLIGHT; }
 
     public Flight[] getAvailableFlights() { return AVAILABLE_FLIGHTS; }
-    public void setAvailableFlights(Flight[] flights) { AVAILABLE_FLIGHTS = flights; }
+    public void setAvailableFlights(Flight[] flights) { AVAILABLE_FLIGHTS = flights.clone(); }
 
     // Health Checks
     public boolean isHealthGps() { return HEALTH_GPS.get(); }

@@ -1,0 +1,15 @@
+List of settings that should be configurable by the user, by category.
+
+Telemetry -
+The telemetry save location.
+The rate at which telemetry is downloaded.
+Whether or not camera feeds should be on.
+Camera resolutions.
+
+Drone (By commands?) -
+Drone name.
+
+System -
+The log save location.
+Map resolution.
+Test mode (use test control or not.)

@@ -7,7 +7,6 @@ import javafx.scene.control.Button;
 import javafx.scene.shape.Rectangle;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.Property;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
 import com.ui.*;
@@ -20,15 +19,17 @@ public class ConnectionPage implements Page {
 
     private BorderPane main;
     private Data data;
-    private ControlService control;
+    private Control control;
+    private CommandService command;
 
     // --------------
     // GENERAL
     // --------------
 
-    public ConnectionPage(Data data, ControlService control) {
+    public ConnectionPage(Data data, Control control, CommandService command) {
         this.data = data;
         this.control = control;
+        this.command = command;
         main = new BorderPane();
         main.setLeft(connectionPanel());
         main.setCenter(healthPanel());
@@ -48,7 +49,7 @@ public class ConnectionPage implements Page {
         StackPane connectionPanel = new StackPane();
 
         // Background
-        Rectangle background = new Rectangle(270, 450, Color.web("#eae8e8"));
+        Rectangle background = new Rectangle(270, 450, Color.web("#e7e7e7"));
         background.setArcWidth(30);
         background.setArcHeight(30);
 
@@ -71,7 +72,7 @@ public class ConnectionPage implements Page {
         portField.setMaxWidth(200);
 
         Button connectButton = new Button("Connect");
-        connectButton.setOnAction(e -> control.tryConnectToDrone());
+        connectButton.setOnAction(e -> command.connectToDroneAsync());
         connectButton.setTextFill(Color.web("#1b1b1b"));
         connectButton.setStyle("-fx-background-color: #91e785");
         connectButton.setMinWidth(200);
@@ -128,7 +129,7 @@ public class ConnectionPage implements Page {
     // --------------
 
     private Pane healthPanel() {
-        VBox healthBox = new VBox(10);
+        VBox healthBox = new VBox(20);
         StackPane healthPanel = new StackPane();
 
         Rectangle background = new Rectangle(400, 350, Color.web("#e7e7e7"));
@@ -180,7 +181,7 @@ public class ConnectionPage implements Page {
         VBox infoBox = new VBox(10);
         
         // Info Panel Background
-        Rectangle background = new Rectangle(250, 450, Color.web("#e0e0e0"));
+        Rectangle background = new Rectangle(250, 450, Color.web("#e7e7e7"));
         background.setArcWidth(30);
         background.setArcHeight(30);
 

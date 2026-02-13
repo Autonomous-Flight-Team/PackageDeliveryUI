@@ -3,7 +3,7 @@ import java.awt.image.BufferedImage;
 
 import org.json.simple.JSONObject;
 
-public abstract class ControlService {
+public abstract class Control {
     private String controlType;
     
     public String getControlType() {
