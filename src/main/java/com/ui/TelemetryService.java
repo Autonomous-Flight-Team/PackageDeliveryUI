@@ -7,18 +7,18 @@ import com.ui.lib.Vector3;
 import javafx.application.Platform;
 
 public class TelemetryService {
-    private final static int POLLING_RATE = 100; //ms
     Data data;
     Control control;
+    Settings settings;
     private Thread telemetryThread;
 
-    public TelemetryService(Data data, Control control) {
+    public TelemetryService(Data data, Control control, Settings settings) {
         this.data = data;
         this.control = control;
+        this.settings = settings;
     }
 
     public void start() {
-        System.out.println("Thread start call");
         telemetryThread = new Thread(() -> {
             boolean firstUpdate = true;
             while (!Thread.currentThread().isInterrupted()) {
@@ -31,16 +31,15 @@ public class TelemetryService {
                         }
                         
                         updateData(control.getTelemetryUpdate());
-                        
-                        // Platform.runLater(() -> {
+                        // TODO: Add camera streaming functionality.
+                        // Platform.runLater(() -> { 
                         //     data.setBottomFrame(control.getBottomCameraView());
                         //     data.setFrontFrame(control.getFrontCameraView());
                         // });
                     }
                     
-                    Thread.sleep(POLLING_RATE);
+                    Thread.sleep(settings.getPollRate());
                 } catch (InterruptedException e) {
-                    System.out.println("TELEM THREAD INTERUP");
                     Thread.currentThread().interrupt();
                     break;
                 }

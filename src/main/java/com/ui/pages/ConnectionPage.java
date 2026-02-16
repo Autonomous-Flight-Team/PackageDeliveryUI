@@ -19,17 +19,22 @@ public class ConnectionPage implements Page {
 
     private BorderPane main;
     private Data data;
+    private Logging logging;
     private Control control;
     private CommandService command;
+    private Settings settings;
 
     // --------------
     // GENERAL
     // --------------
 
-    public ConnectionPage(Data data, Control control, CommandService command) {
+    public ConnectionPage(Data data, Control control, CommandService command, Settings settings, Logging logging) {
         this.data = data;
         this.control = control;
+        this.logging = logging;
         this.command = command;
+        this.settings = settings;
+
         main = new BorderPane();
         main.setLeft(connectionPanel());
         main.setCenter(healthPanel());
@@ -63,16 +68,23 @@ public class ConnectionPage implements Page {
         connectionTitle.setFont(new Font(20));
         StackPane connectionTitleStack = new StackPane(connectionTitleBg, connectionTitle);
 
-        TextField addressField = new TextField("Address");
+        TextField addressField = new TextField(settings.getConnectionAddress());
         addressField.getStyleClass().add("connect-field");
         addressField.setMaxWidth(200);
 
-        TextField portField = new TextField("Port");
+        TextField portField = new TextField(Integer.toString(settings.getConnectionPort()));
         portField.getStyleClass().add("connect-field");
         portField.setMaxWidth(200);
 
         Button connectButton = new Button("Connect");
-        connectButton.setOnAction(e -> command.connectToDroneAsync());
+        connectButton.setOnAction(e -> {
+            try {
+                settings.setConnectionAddress(addressField.getText());
+                settings.setConnectionPort(Integer.parseInt(portField.getText())); 
+                command.connectToDroneAsync();
+            } catch (NumberFormatException a) {
+                logging.logError("Failed to set drone connection parameters - Follow String/int format.");
+            }});
         connectButton.setTextFill(Color.web("#1b1b1b"));
         connectButton.setStyle("-fx-background-color: #91e785");
         connectButton.setMinWidth(200);

@@ -12,21 +12,60 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class Settings {
+    // --------------
+    // VARIABLES
+    // --------------
+
     private FileManager fileManager;
+    private Logging logging;
 
-    public int pollRate;
-    public String connectionAddress;
-    public int connectionPort;
-    public int cameraResX;
-    public int cameraResY;
+    private int pollRate;
+    private String connectionAddress;
+    private int connectionPort;
+    private int cameraResX;
+    private int cameraResY;
 
-    public int mapResX;
-    public boolean testMode;
+    private int mapResX;
+    private boolean testMode;
 
-    public Settings(FileManager fileManager) {
+    // --------------
+    // GENERAL
+    // --------------
+
+    public Settings(FileManager fileManager, Logging logging) {
         this.fileManager = fileManager;
+        this.logging = logging;
         loadSettings();
     }
+
+    // --------------
+    // GETTERS/SETTERS
+    // --------------
+
+    public int getPollRate() { return pollRate; }
+    public void setPollRate(int pollRate) { this.pollRate = pollRate; }
+
+    public String getConnectionAddress() { return connectionAddress; }
+    public void setConnectionAddress(String connectionAddress) { this.connectionAddress = connectionAddress; }
+
+    public int getConnectionPort() { return connectionPort; }
+    public void setConnectionPort(int connectionPort) { this.connectionPort = connectionPort; }
+
+    public int getCameraResX() { return cameraResX; }
+    public void setCameraResX(int cameraResX) { this.cameraResX = cameraResX; }
+
+    public int getCameraResY() { return cameraResY; }
+    public void setCameraResY(int cameraResY) { this.cameraResY = cameraResY; }
+
+    public int getMapResX() { return mapResX; }
+    public void setMapResX(int mapResX) { this.mapResX = mapResX; }
+
+    public boolean getTestMode() { return testMode; }
+    public void setTestMode(boolean testMode) { this.testMode = testMode; }
+
+    // --------------
+    // FUNCTION
+    // --------------
 
     private void loadSettings() {
         JSONParser parser = new JSONParser();
@@ -43,17 +82,17 @@ public class Settings {
             inputStream = Files.newInputStream(fileManager.getSettingsDir().resolve("UserSettings.json"));
             reader = new InputStreamReader(inputStream);
         } catch (FileNotFoundException e) { 
-            System.out.print("Failed to load settings file");
+            logging.logError("Failed to load user settings, reverting to default (Likely due to a first time launch, no need to worry if so)");
         } catch (IOException e) {
-            System.out.println("Failed to read settings file.");
+            logging.logError("Failed to read settings file.");
         }
 
         try{ 
             settings = (JSONArray) parser.parse(reader); 
         } catch (org.json.simple.parser.ParseException e) {
-            System.out.println("Failed to parse settings file.");
+            logging.logError("Failed to parse settings file.");
         } catch (IOException e) {
-            System.out.println("Failed to read settings file.");
+            logging.logError("Failed to read settings file.");
         }
 
         JSONObject telemetry = (JSONObject) settings.get(0);
@@ -67,12 +106,11 @@ public class Settings {
 
         mapResX = ((Long) system.get("mapResX")).intValue();
         testMode = (boolean) system.get("testMode");
-        System.out.println(testMode);
     }
 
-    private void saveSettings() {
+    public void saveSettings() {
         // DEBUG
-        System.out.println("Writing save settings to " + fileManager.getSettingsDir() + "/UserSettings.json");
+        logging.logInfo("Saving user settings");
         JSONArray settings = new JSONArray();
         JSONObject telemetry = new JSONObject();
         JSONObject system = new JSONObject();
@@ -94,8 +132,7 @@ public class Settings {
             writer.write(settings.toJSONString());
             writer.flush();
         } catch (IOException e) {
-            //TODO: Logging
-            System.out.println("Failed to save settings");
+            logging.logError("Failed to save settings");
         }
     }
 

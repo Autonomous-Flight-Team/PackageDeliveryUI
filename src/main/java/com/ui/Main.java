@@ -36,12 +36,12 @@ public class Main extends Application {
         // Load systems
         fileManager = new FileManager();
         logging = new Logging(fileManager);
-        settings = new Settings(fileManager);
+        settings = new Settings(fileManager, logging);
         data = new Data();
         control = new TestControl(data);
 
         // Load services
-        telemetryService = new TelemetryService(data, control);
+        telemetryService = new TelemetryService(data, control, settings);
         commandService = new CommandService(data, control, logging);
 
         // Start services
@@ -51,8 +51,8 @@ public class Main extends Application {
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         // Load pages
-        Page connectionPage = new ConnectionPage(data, control, commandService);
-        Page configurationPage = new ConfigurationPage(data, commandService);
+        Page connectionPage = new ConnectionPage(data, control, commandService, settings, logging);
+        Page configurationPage = new ConfigurationPage(data, commandService, settings, fileManager);
         Page flightPage = new FlightPage(data, commandService);
         Page cameraPage = new CameraPage(data,commandService);
 
@@ -74,6 +74,7 @@ public class Main extends Application {
 
     @Override
     public void stop() throws Exception {
+        logging.logInfo("Shutting down");
         telemetryService.stop();
         commandService.stop();
         settings.stop();

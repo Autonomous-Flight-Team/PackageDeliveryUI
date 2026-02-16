@@ -29,7 +29,7 @@
     -fx-background-color: #b8b8b8;
     -fx-text-fill: rgb(22, 22, 22);
     -fx-background-radius: 15;
-    -fx-border-radius: 15;
+    -fx-border-radius: 1;
     -fx-border-color: transparent;
     -fx-padding: 12 20;
     -fx-font-size: 14px;
@@ -40,4 +40,68 @@
     -fx-border-color: #4A4A4A;
     -fx-text-fill: rgb(255, 255, 255);
     -fx-border-width: 2;
+}
+
+.option-field {
+    -fx-background-color: #b8b8b8;
+    -fx-text-fill: rgb(22, 22, 22);
+    -fx-background-radius: 15;
+    -fx-border-radius: 12;
+    -fx-border-color: transparent;
+    -fx-padding: 12 20;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #999999;
+}
+
+.option-field:focused {
+    -fx-border-color: #e7e7e7;
+    -fx-text-fill: rgb(255, 255, 255);
+    -fx-border-width: 2;
+}
+
+.option-button {
+    -fx-background-radius: 12;
+    -fx-background-color: #b0b0b0;
+    -fx-min-width: 200px;
+    -fx-min-height: 44px;
+}
+
+.option-button:pressed {
+    -fx-background-color: #96bac9;
+}
+
+.option-box {
+    -fx-background-radius: 12;
+    -fx-background-color: #e89090;
+    -fx-min-width: 200px;
+    -fx-min-height: 44px;
+}
+
+.option-box:selected {
+    -fx-background-color: #a3d984;
+}
+
+.option-box .mark {
+    visibility: hidden;
+}
+
+.option-box .box {
+    visibility: hidden;
+}
+
+.option-box .mark {
+    visibility: hidden;
+}
+
+.update-settings-button {
+    -fx-background-color: #b4e891;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-min-height: 40px;
+    -fx-min-width: 120px;
+}
+
+
+.update-settings-button:pressed {
+    -fx-background-color: #85a883;
 }
