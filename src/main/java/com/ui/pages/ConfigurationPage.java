@@ -178,7 +178,12 @@ public class ConfigurationPage implements Page {
 
 
         Label mapTitle = settingsTitleLabel("Map Settings");
-        Label mapResTitle = settingsItemLabel("Map Resolution");
+        Label mapResTitle = settingsItemLabel("Map X Resolution");
+        Label mapResYTitle = settingsItemLabel("Map Y Resolution");
+        Label mapPollTitle = settingsItemLabel("Map Poll Rate (>1000)");
+
+        TextField mapResYField = new TextField(Integer.toString(settings.getMapResY()));
+        TextField mapPollField = new TextField(Integer.toString(settings.getMapPollRate()));
 
         CheckBox testModeBox = new CheckBox();
         testModeBox.setOnAction(e -> {
@@ -244,6 +249,8 @@ public class ConfigurationPage implements Page {
         updateSettings.setOnAction(e -> {
             settings.setTestMode(testModeBox.isSelected());
             settings.setMapResX(Integer.parseInt(mapResField.getText()));
+            settings.setMapResY(Integer.parseInt(mapResYField.getText()));
+            settings.setMapPollRate(Integer.parseInt(mapPollField.getText()));
         });
 
         options.getChildren().addAll(
@@ -252,6 +259,8 @@ public class ConfigurationPage implements Page {
             testStack,
             mapTitle,
             settingStack(mapResTitle, mapResField),
+            settingStack(mapResYTitle, mapResYField),
+            settingStack(mapPollTitle, mapPollField),
             updateSettings
         );
 
@@ -261,8 +270,6 @@ public class ConfigurationPage implements Page {
         systemStack.getChildren().addAll(background, options);
         return systemStack;
     }
-
-
 
     // --------------
     // UI

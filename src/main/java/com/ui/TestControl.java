@@ -102,13 +102,11 @@ public class TestControl extends Control {
         return obj;
     }
 
-    // Update void with command format? Or overload? Research.
     public Flight[] getAvailableFlights() {
-        System.out.println("TEST FLIGHTS ADD");
         Flight[] flights = new Flight[1];
         Position[] waypoints = new Position[1];
-        waypoints[0] = new Position();
-        flights[0] = new Flight("Example Flight", "The only available flight", new Position(), new Position(), waypoints);
+        waypoints[0] = new Position(47.657438,-122.305680, 0);
+        flights[0] = new Flight("Example Flight", "The only available flight", new Position(47.658378,-122.303370, 0), new Position(47.657691,-122.302866, 0), waypoints);
         return flights;
     }
 

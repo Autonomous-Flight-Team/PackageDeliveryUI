@@ -205,7 +205,8 @@ public class CommandService {
             @Override
             protected Void call() throws Exception {
                 logging.logCommand("Updating flight registry");
-                Platform.runLater(() -> {data.setAvailableFlights(control.getAvailableFlights());} );
+                Platform.runLater(() -> {data.setAvailableFlights(control.getAvailableFlights());});
+                Platform.runLater(() -> {data.setSelectedFlight(0);});
                 return null;
             }
         };

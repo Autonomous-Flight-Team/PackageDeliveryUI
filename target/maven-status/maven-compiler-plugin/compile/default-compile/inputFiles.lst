@@ -4,6 +4,7 @@
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/lib/Position.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/pages/CameraPage.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/Launcher.java
+/Users/continuum/PackageDeliveryUI/src/main/java/com/ui/MapService.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/TelemetryService.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/pages/FlightPage.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/TestControl.java
@@ -13,6 +14,7 @@
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/Main.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/FileManager.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/lib/Vector3.java
+/Users/continuum/PackageDeliveryUI/src/main/java/com/ui/pages/Calibration.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/Control.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/Data.java
 /Users/continuum/PackageDeliveryUI/src/main/java/com/ui/pages/ConfigurationPage.java

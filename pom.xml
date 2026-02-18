@@ -30,13 +30,12 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- JavaFX FXML (for future use) -->
+        <!-- JavaFX FXML -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-
 
         <!-- Swing -->
 	    <dependency>
@@ -51,12 +50,20 @@
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
         </dependency>
-      
-	</dependencies>
-
-    <!-- BUILD CONFIGURATION -->
+    </dependencies>
+    
+    <!-- Build Config -->
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.ui.Launcher</mainClass>
+                </configuration>
+            </plugin>
+
             <!-- Maven Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -75,9 +82,11 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.ui.Launcher</mainClass>
+                    <noModulePath>true</noModulePath>
                 </configuration>
             </plugin>
 
+            <!-- Maven Assembly for Installed Builds (fat jars) -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>

@@ -1,5 +1,6 @@
 package com.ui;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -8,6 +9,9 @@ import javafx.scene.control.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+
+import java.util.Map;
+
 import com.ui.pages.*;
 
 public class Main extends Application {
@@ -24,9 +28,16 @@ public class Main extends Application {
 
     TelemetryService telemetryService;
     CommandService commandService;
+    MapService mapService;
 
     @Override
     public void start(Stage stage) throws Exception {
+        Platform.runLater(() -> {
+        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+                System.err.println("JavaFX thread exception:");
+                throwable.printStackTrace();
+            });
+        });
         // Load scene and initial pane creation (needed by later setup functions)
         main = new BorderPane();
         Scene scene = new Scene(main, 1050, 570, Color.BEIGE);
@@ -34,6 +45,7 @@ public class Main extends Application {
         stage.setScene(scene);
 
         // Load systems
+        
         fileManager = new FileManager();
         logging = new Logging(fileManager);
         settings = new Settings(fileManager, logging);
@@ -43,9 +55,11 @@ public class Main extends Application {
         // Load services
         telemetryService = new TelemetryService(data, control, settings);
         commandService = new CommandService(data, control, logging);
-
+        mapService = new MapService(data, control, settings, logging);
+        
         // Start services
         telemetryService.start();
+        mapService.start();
 
         // Load styling
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
@@ -53,7 +67,7 @@ public class Main extends Application {
         // Load pages
         Page connectionPage = new ConnectionPage(data, control, commandService, settings, logging);
         Page configurationPage = new ConfigurationPage(data, commandService, settings, fileManager);
-        Page flightPage = new FlightPage(data, commandService);
+        Page flightPage = new FlightPage(data, commandService, mapService);
         Page cameraPage = new CameraPage(data,commandService);
 
         pages = new Page[4]; // Replace magic number (# of pages)
@@ -75,8 +89,10 @@ public class Main extends Application {
     @Override
     public void stop() throws Exception {
         logging.logInfo("Shutting down");
+
         telemetryService.stop();
         commandService.stop();
+        mapService.stop();
         settings.stop();
         logging.stop();
         
@@ -108,10 +124,10 @@ public class Main extends Application {
         Button navbarButtons[] = {
             new Button("Connection"),
             new Button("Configuration"),
-            new Button("Review"),
+            new Button("Calibration"),
             new Button("Flight"),
-            new Button("Telemetry"),
-            new Button("Camera")
+            new Button("Camera"),
+            new Button("Review")
         };
 
         for(int i = 0; i < navbarButtons.length; i++) {

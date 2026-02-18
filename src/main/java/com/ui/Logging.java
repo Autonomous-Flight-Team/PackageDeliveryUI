@@ -26,6 +26,7 @@ public class Logging {
     public void logError(String error) {
         try {
             logOut.write("[ERROR] - " + error + " - " + c.get(Calendar.HOUR_OF_DAY) + ":"  + c.get(Calendar.SECOND) + "\n");
+            logOut.flush();
         } catch (IOException e) {
             System.out.println("Failed to write to log outfile");
             e.printStackTrace();
@@ -35,6 +36,7 @@ public class Logging {
     public void logInfo(String info) {
         try {
             logOut.write("[INFO] - " + info + " - " + c.get(Calendar.HOUR_OF_DAY) + ":"  + c.get(Calendar.SECOND) + "\n");
+            logOut.flush();
         } catch (IOException e) {
             System.out.println("Failed to write to log outfile");
             e.printStackTrace();
@@ -44,6 +46,7 @@ public class Logging {
     public void logCommand(String command) {
         try {
             logOut.write("[COMMAND] - " + command + " - " + c.get(Calendar.HOUR_OF_DAY) + ":"  + c.get(Calendar.SECOND) + "\n");
+            logOut.flush();
         } catch (IOException e) {
             System.out.println("Failed to write to log outfile");
             e.printStackTrace();
@@ -53,6 +56,7 @@ public class Logging {
     public void stop() {
         try {
             logOut.flush();
+            logOut.close();
         } catch (IOException e) {
             System.out.println("Failed to save log outfile");
             e.printStackTrace();

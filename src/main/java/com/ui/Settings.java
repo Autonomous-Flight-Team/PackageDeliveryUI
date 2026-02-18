@@ -26,6 +26,8 @@ public class Settings {
     private int cameraResY;
 
     private int mapResX;
+    private int mapResY;
+    private int mapPollRate;
     private boolean testMode;
 
     // --------------
@@ -59,6 +61,15 @@ public class Settings {
 
     public int getMapResX() { return mapResX; }
     public void setMapResX(int mapResX) { this.mapResX = mapResX; }
+
+    public int getMapResY() { return mapResY; }
+    public void setMapResY(int mapResY) { this.mapResY = mapResY; }
+
+    public int getMapPollRate() { return mapPollRate; }
+    public void setMapPollRate(int mapPollRate) { 
+        if(mapPollRate < 1000) {throw new IllegalArgumentException("Map Poll Rate must be over 1s");}
+        this.mapPollRate = mapPollRate;
+    }
 
     public boolean getTestMode() { return testMode; }
     public void setTestMode(boolean testMode) { this.testMode = testMode; }
@@ -105,6 +116,8 @@ public class Settings {
         cameraResY = ((Long) telemetry.get("cameraResY")).intValue();
 
         mapResX = ((Long) system.get("mapResX")).intValue();
+        mapResY = ((Long) system.get("mapResY")).intValue();
+        mapPollRate = ((Long) system.get("mapPollRate")).intValue();
         testMode = (boolean) system.get("testMode");
     }
 
@@ -122,6 +135,8 @@ public class Settings {
         telemetry.put("cameraResY", cameraResY);
 
         system.put("mapResX", mapResX);
+        system.put("mapResY", mapResY);
+        system.put("mapPollRate", mapPollRate);
         system.put("testMode", testMode);
 
         settings.add(telemetry);

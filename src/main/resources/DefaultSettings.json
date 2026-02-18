@@ -1,14 +1,13 @@
-{
-  "telemetry": {
-    "pollRate": 100,
-    "address": "drone.net",
-    "port": 10,
-    "cameraStream": false,
-    "cameraResX": 480,
-    "cameraResY": 360
-  },
-  "system": {
-    "mapResX": 360,
-    "testMode": false
-  }
-}
+[{
+  "pollRate": 100,
+  "address": "drone.net",
+  "port": 10,
+  "cameraStream": false,
+  "cameraResX": 480,
+  "cameraResY": 360
+},{
+  "mapResX": 360,
+  "mapResY": 380,
+  "mapPollRate": 5000,
+  "testMode": false
+}]

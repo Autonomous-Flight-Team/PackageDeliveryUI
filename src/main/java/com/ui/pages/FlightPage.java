@@ -22,16 +22,18 @@ public class FlightPage implements Page {
     private BorderPane main;
     private Data data;
     private CommandService command;
-    private Image mapImage;
+    private MapService mapService;
 
 
     // --------------
     // GENERAL
     // --------------
 
-    public FlightPage(Data data, CommandService command) {
+    public FlightPage(Data data, CommandService command, MapService mapService) {
         this.data = data;
         this.command = command;
+        this.mapService = mapService;
+        
         main = new BorderPane();
 
         Pane stats = statsPanel();
@@ -60,11 +62,12 @@ public class FlightPage implements Page {
         // TODO functionality: pull position data to get imagery from google maps, used center,
         // dir, xwidth and ywidth to place the drone icons. Placehold locations for now - build out 
         // placement functionality in modules
-        mapImage = new Image("Images/mapUnavailable.png");
-        ImageView mapView = new ImageView();
-        mapView.setImage(mapImage);
-        mapView.setFitWidth(360);
-        mapView.setFitHeight(380);
+        Image mapImage = new Image("Images/mapUnavailable.png");
+        ImageView mapImageView = new ImageView();
+        mapImageView.setImage(mapImage);
+        mapImageView.setFitWidth(360);
+        mapImageView.setFitHeight(380);
+        mapImageView.imageProperty().bind(mapService.getMapImageObjectProperty());
 
         //Image droneIcon = new Image("Images/droneIcon.png");
         //Image homeIcon = new Image("Images/droneIcon.png");
@@ -72,7 +75,7 @@ public class FlightPage implements Page {
 
         StackPane mapStack = new StackPane();
 
-        mapStack.getChildren().add(mapView);
+        mapStack.getChildren().add(mapImageView);
         mapPanel.setPadding(new Insets(10, 20, 0, 25));
         mapPanel.getChildren().addAll(background, mapStack);
         return mapPanel;

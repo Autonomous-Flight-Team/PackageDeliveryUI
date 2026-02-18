@@ -71,6 +71,6 @@ Configuration -
 Change the drone name, adjust minimum battery fail voltage, and so forth.
 
 
-Todos:
-Get a control test interface up so that I can setup flight testing and actually add button functionality.
-This means getting gazebo integration up and running.
+
+Calibration paging -
+Tests section. Anything else?
