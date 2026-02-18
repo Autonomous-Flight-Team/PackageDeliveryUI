@@ -4,7 +4,9 @@ import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 
 import javafx.scene.image.Image;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import com.ui.lib.*;
@@ -20,7 +22,21 @@ public class MapService {
     Settings settings;
     Logging logging;
 
+    // Map reference parameters
     private ObjectProperty<Image> mapImage = new SimpleObjectProperty<Image>();
+
+    private IntegerProperty droneX = new SimpleIntegerProperty(); // Need a scalable way of doing this. Probably an array of positions, for drone/home/target/waypoint1/../waypointN.
+    private IntegerProperty droneY = new SimpleIntegerProperty(); // Then another for lines. Generate them later? I//
+    private IntegerProperty targetX = new SimpleIntegerProperty();
+    private IntegerProperty targetY = new SimpleIntegerProperty();
+    private IntegerProperty homeX = new SimpleIntegerProperty();
+    private IntegerProperty homeY = new SimpleIntegerProperty();
+
+    private double bboxBottom;
+    private double bboxTop;
+    private double bboxRight;
+    private double bboxLeft;
+
     private Thread mapThread;
     String baseURL;
 
@@ -36,16 +52,21 @@ public class MapService {
         this.settings = settings;
         this.logging = logging;
         
-        baseURL = ("https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/");
+        baseURL = ("https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/");
     }
 
     // --------------
     // GETTERS
     // --------------
 
-    public ObjectProperty<Image> getMapImageObjectProperty() {
-        return mapImage;
-    }
+    public ObjectProperty<Image> getMapImageObjectProperty() { return mapImage; }
+
+    public IntegerProperty getDroneXProperty() { return droneX; }
+    public IntegerProperty getDroneYProperty() { return droneY; }
+    public IntegerProperty getHomeXProperty() { return homeX; }
+    public IntegerProperty getHomeYProperty() { return homeY; }
+    public IntegerProperty getTargetXProperty() { return targetX; }
+    public IntegerProperty getTargetYProperty() { return targetY; }
     
     // --------------
     // FUNCTION
@@ -57,8 +78,15 @@ public class MapService {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     if (data.isConnectedToDrone()) {
-                        // Generate URL
-                        String bbox = computeBoundingBox(data.getAvailableFlights()[data.getSelectedFlight()], data.getDronePositionGlobal());
+                        String bbox = "";
+                        
+                        if(data.getAvailableFlights() != null) {
+                            // Generate URL
+                            bbox = computeBoundingBox(data.getAvailableFlights()[data.getSelectedFlight()], data.getDronePositionGlobal());
+                            // Compute relative icon positioning
+                            Platform.runLater(() -> computeIconPositioning());
+                        }
+
                         if(!bbox.equals(lastBbox)) {
                             String newURL = baseURL + "[" + bbox + "]/" + settings.getMapResX() + "x" + settings.getMapResY() + "?access_token=" + ACCESS_TOKEN; 
 
@@ -85,13 +113,14 @@ public class MapService {
                         }
                         Thread.sleep(settings.getMapPollRate());
                     }
-                } catch (Exception e) {
+                } catch (IOException e) {
                     e.printStackTrace();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
                 try{ 
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                     Thread.currentThread().interrupt();
                     break;
                 }
@@ -102,11 +131,38 @@ public class MapService {
     }
 
     public void stop() {
-        System.out.println("STOP CALL");
         mapThread.interrupt();
     }
 
-    public String computeBoundingBox(Flight currentFlight, Position dronePosition) {
+    private void computeIconPositioning() {
+        Position dronePosition = data.getDronePositionGlobal();
+        Position homePosition = data.getAvailableFlights()[data.getSelectedFlight()].getHome();
+        Position targetPosition = data.getAvailableFlights()[data.getSelectedFlight()].getTarget();
+
+        int droneXOffset = (int) (((dronePosition.getX() - bboxLeft)/(bboxRight - bboxLeft) * settings.getMapResX()) - settings.getMapResX()/2);
+        int droneYOffset = (int) (settings.getMapResY()/2 - ((dronePosition.getY() - bboxBottom)/(bboxTop - bboxBottom) * settings.getMapResY()) );
+
+        int homeXOffset = (int) (((homePosition.getX() - bboxLeft)/(bboxRight - bboxLeft) * settings.getMapResX()) - settings.getMapResX()/2);
+        int homeYOffset = (int) (settings.getMapResY()/2 - ((homePosition.getY() - bboxBottom)/(bboxTop - bboxBottom) * settings.getMapResY()));
+
+        int targetXOffset = (int) (((targetPosition.getX() - bboxLeft)/(bboxRight - bboxLeft) * settings.getMapResX()) - settings.getMapResX()/2);
+        int targetYOffset = (int) (settings.getMapResY()/2 - ((targetPosition.getY() - bboxBottom)/(bboxTop - bboxBottom) * settings.getMapResY()));
+
+        System.out.println("Drone X/Y = " + droneXOffset + " / " + droneYOffset);
+        System.out.println("Home X/Y = " + homeXOffset + " / " + homeYOffset);
+        System.out.println("Target X/Y = " + targetXOffset + " / " + targetYOffset);
+
+        droneX.set(droneXOffset);
+        droneY.set(droneYOffset);
+
+        homeX.set(homeXOffset);
+        homeY.set(homeYOffset);
+
+        targetX.set(targetXOffset);
+        targetY.set(targetYOffset);
+    }
+
+    private String computeBoundingBox(Flight currentFlight, Position dronePosition) {
         double top = dronePosition.getY();
         double right = dronePosition.getX();
         double bottom = dronePosition.getY();
@@ -133,6 +189,14 @@ public class MapService {
             }
         }
 
-        return bottom + "," + left + "," + top + "," + right;
+        double width = right - left;
+        double height = top - bottom;
+
+        bboxBottom = bottom;//(bottom - height/5);
+        bboxLeft = left;//(left - width/5);
+        bboxTop =  top;//(top + height/5);
+        bboxRight = right;//(right + width/5);
+
+        return bboxBottom + "," + bboxLeft + "," + bboxTop + "," + bboxRight;
     }
 }

@@ -39,8 +39,8 @@ public class CameraPage implements Page {
         this.data = data;
         this.command = command;
         main = new BorderPane();
-        bottomImageView = new ImageView(new Image("Images/mapUnavailable.png"));
-        frontImageView = new ImageView(new Image("Images/mapUnavailable.png"));
+        bottomImageView = new ImageView(new Image("Live/cameraFront.png"));
+        frontImageView = new ImageView(new Image("Live/cameraFront.png"));
         main.setLeft(leftImagePanel());
         main.setCenter(optionPanel());
         main.setRight(rightImagePanel());

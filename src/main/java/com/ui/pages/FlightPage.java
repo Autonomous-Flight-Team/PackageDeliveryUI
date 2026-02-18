@@ -6,6 +6,9 @@ import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import javafx.scene.shape.Rectangle;
 import javafx.geometry.Insets;
+
+import javax.swing.ImageIcon;
+
 import com.ui.*;
 import javafx.geometry.Pos;
 import javafx.beans.binding.Bindings;
@@ -62,20 +65,39 @@ public class FlightPage implements Page {
         // TODO functionality: pull position data to get imagery from google maps, used center,
         // dir, xwidth and ywidth to place the drone icons. Placehold locations for now - build out 
         // placement functionality in modules
-        Image mapImage = new Image("Images/mapUnavailable.png");
         ImageView mapImageView = new ImageView();
-        mapImageView.setImage(mapImage);
         mapImageView.setFitWidth(360);
         mapImageView.setFitHeight(380);
         mapImageView.imageProperty().bind(mapService.getMapImageObjectProperty());
 
-        //Image droneIcon = new Image("Images/droneIcon.png");
-        //Image homeIcon = new Image("Images/droneIcon.png");
-        //Image targetIcon = new Image("Images/droneIcon.png");
+        ImageView droneIcon = new ImageView(new Image("Images/drone.png"));
+        ImageView homeIcon = new ImageView(new Image("Images/home.png"));
+        ImageView targetIcon = new ImageView(new Image("Images/target.png"));
+
+        droneIcon.setFitWidth(32);
+        droneIcon.setFitHeight(32);
+        droneIcon.setPreserveRatio(true);
+
+        homeIcon.setFitWidth(32);
+        homeIcon.setFitHeight(32);
+        homeIcon.setPreserveRatio(true);
+                
+        targetIcon.setFitWidth(32);
+        targetIcon.setFitHeight(32);
+        targetIcon.setPreserveRatio(true);
+
+        droneIcon.translateXProperty().bind(mapService.getDroneXProperty());
+        droneIcon.translateYProperty().bind(mapService.getDroneYProperty());
+
+        homeIcon.translateXProperty().bind(mapService.getHomeXProperty());
+        homeIcon.translateYProperty().bind(mapService.getHomeYProperty());
+
+        targetIcon.translateXProperty().bind(mapService.getTargetXProperty());
+        targetIcon.translateYProperty().bind(mapService.getTargetYProperty());
 
         StackPane mapStack = new StackPane();
 
-        mapStack.getChildren().add(mapImageView);
+        mapStack.getChildren().addAll(mapImageView, droneIcon, homeIcon, targetIcon);
         mapPanel.setPadding(new Insets(10, 20, 0, 25));
         mapPanel.getChildren().addAll(background, mapStack);
         return mapPanel;

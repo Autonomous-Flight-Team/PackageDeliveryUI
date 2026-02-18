@@ -10,8 +10,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-import java.util.Map;
-
 import com.ui.pages.*;
 
 public class Main extends Application {

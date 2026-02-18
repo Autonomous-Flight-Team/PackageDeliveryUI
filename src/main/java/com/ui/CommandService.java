@@ -1,14 +1,10 @@
 package com.ui;
 
-import com.ui.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javafx.application.Platform;
-
-import org.json.simple.JSONObject;
-
 import javafx.concurrent.Task;
 
 public class CommandService {

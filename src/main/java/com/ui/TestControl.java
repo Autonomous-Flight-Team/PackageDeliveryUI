@@ -105,8 +105,8 @@ public class TestControl extends Control {
     public Flight[] getAvailableFlights() {
         Flight[] flights = new Flight[1];
         Position[] waypoints = new Position[1];
-        waypoints[0] = new Position(47.657438,-122.305680, 0);
-        flights[0] = new Flight("Example Flight", "The only available flight", new Position(47.658378,-122.303370, 0), new Position(47.657691,-122.302866, 0), waypoints);
+        waypoints[0] = new Position(-10,-10, 0);
+        flights[0] = new Flight("Example Flight", "The only available flight", new Position(10,10, 0), new Position(-10,10, 0), waypoints);
         return flights;
     }
 
