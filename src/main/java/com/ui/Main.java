@@ -67,12 +67,14 @@ public class Main extends Application {
         Page configurationPage = new ConfigurationPage(data, commandService, settings, fileManager);
         Page flightPage = new FlightPage(data, commandService, mapService);
         Page cameraPage = new CameraPage(data,commandService);
+        Page calibrationPage = new CalibrationPage(data, commandService);
 
-        pages = new Page[4]; // Replace magic number (# of pages)
+        pages = new Page[5]; // Replace magic number (# of pages)
         pages[0] = connectionPage;
         pages[1] = configurationPage;
         pages[2] = flightPage;
         pages[3] = cameraPage;
+        pages[4] = calibrationPage;
 
         // Main pane setup
         main.setTop(navbar());

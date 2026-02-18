@@ -243,4 +243,70 @@ public class CommandService {
 
         executor.submit(healthCheckTask);
     }
+
+    // --------------
+    // TESTS
+    // --------------
+
+    public void testMotorSpinAllAsync() {
+        Task<Void> motorSpinAllTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                logging.logCommand("Testing Motor Spin All");
+                control.runTestMotorSpinAll();
+                return null;
+            }
+        };
+
+        motorSpinAllTask.setOnSucceeded(e -> {
+            logging.logInfo("Motor Spin All test started");
+        });
+        
+        motorSpinAllTask.setOnFailed(e -> {
+            logging.logError("Failed to start Motor Spin All test");
+        });
+
+        executor.submit(motorSpinAllTask);
+    }
+    public void testMotorSpinSeqAsync() {
+        Task<Void> motorSpinSeqTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                logging.logCommand("Testing Motor Sequential Spin");
+                control.runTestMotorSpinSequence();
+                return null;
+            }
+        };
+
+        motorSpinSeqTask.setOnSucceeded(e -> {
+            logging.logInfo("Motor Sequential Spin test started");
+        });
+        
+        motorSpinSeqTask.setOnFailed(e -> {
+            logging.logError("Failed to start Motor Sequential Spin test");
+        });
+
+        executor.submit(motorSpinSeqTask);
+    }
+
+    public void testPayloadAcqAsync() {
+        Task<Void> payloadAcqTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                logging.logCommand("Testing payload acqusition cycle");
+                control.runTestPayloadActuate();
+                return null;
+            }
+        };
+
+        payloadAcqTask.setOnSucceeded(e -> {
+            logging.logInfo("Payload Acquisition test started");
+        });
+        
+        payloadAcqTask.setOnFailed(e -> {
+            logging.logError("Failed to start Payload Acquisition test");
+        });
+
+        executor.submit(payloadAcqTask);
+    }
 }

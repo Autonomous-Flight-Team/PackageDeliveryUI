@@ -223,4 +223,44 @@ public class TestControl extends Control {
         checkHeathStorage();
         checkHeathCameras();
     }
+
+    // --------------
+    // TESTS
+    // --------------
+
+    public void runTestMotorSpinAll() {
+        Platform.runLater(() -> data.setTestStatusMotorSpinAll(true));
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep interrupted");
+        }
+        
+        Platform.runLater(() -> data.setTestStatusMotorSpinAll(false));
+    }
+
+    public void runTestMotorSpinSequence() {
+        Platform.runLater(() -> data.setTestStatusMotorSpinSeq(true));
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep interrupted");
+        }
+        
+        Platform.runLater(() -> data.setTestStatusMotorSpinSeq(false));
+    }
+
+    public void runTestPayloadActuate() {
+        Platform.runLater(() -> data.setTestStatusPayloadAcq(true));
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep interrupted");
+        }
+        
+        Platform.runLater(() -> data.setTestStatusPayloadAcq(false));
+    }
 }

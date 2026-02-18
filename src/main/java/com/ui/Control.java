@@ -53,4 +53,11 @@ public abstract class Control {
     public abstract void checkHeathPixhawk();
     public abstract void checkHeathCameras();
     public abstract void checkHealthAll();
+
+    // --------------
+    // TESTS
+    // --------------
+    public abstract void runTestMotorSpinAll();
+    public abstract void runTestMotorSpinSequence();
+    public abstract void runTestPayloadActuate();
 }

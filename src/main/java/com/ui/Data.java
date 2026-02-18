@@ -61,6 +61,11 @@ public class Data {
     // Camera
     private BufferedImage BOTTOM_CAMERA_FRAME;
     private BufferedImage FRONT_CAMERA_FRAME;
+
+    // Tests
+    private BooleanProperty TEST_STATUS_MOTOR_ALL = new SimpleBooleanProperty(); // True = test in progress, vv.
+    private BooleanProperty TEST_STATUS_MOTOR_SEQ = new SimpleBooleanProperty();
+    private BooleanProperty TEST_STATUS_PAYLOAD_ACQ = new SimpleBooleanProperty();
     
     // Misc 
     private BooleanProperty PAYLOAD_STATUS = new SimpleBooleanProperty();
@@ -205,6 +210,19 @@ public BooleanProperty healthPixhawkProperty() { return HEALTH_PIXHAWK; }
 
     public BufferedImage getFrontFrame() { return FRONT_CAMERA_FRAME; }
     public void setFrontFrame(BufferedImage frame) { FRONT_CAMERA_FRAME = frame; }
+
+    // Tests
+    public boolean getTestStatusMotorSpinAll() { return TEST_STATUS_MOTOR_ALL.get(); }
+    public void setTestStatusMotorSpinAll(boolean value) { TEST_STATUS_MOTOR_ALL.set(value); }
+    public BooleanProperty testStatusMotorSpinAllProperty() { return TEST_STATUS_MOTOR_ALL; }
+
+    public boolean getTestStatusMotorSpinSeq() { return TEST_STATUS_MOTOR_SEQ.get(); }
+    public void setTestStatusMotorSpinSeq(boolean value) { TEST_STATUS_MOTOR_SEQ.set(value); }
+    public BooleanProperty testStatusMotorSpinSeqProperty() { return TEST_STATUS_MOTOR_SEQ; }
+
+    public boolean getTestStatusPayloadAcq() { return TEST_STATUS_PAYLOAD_ACQ.get(); }
+    public void setTestStatusPayloadAcq(boolean value) { TEST_STATUS_PAYLOAD_ACQ.set(value); }
+    public BooleanProperty testStatusPayloadAcqProperty() { return TEST_STATUS_PAYLOAD_ACQ; }
 
     // Misc
     public boolean getPayloadStatus() { return PAYLOAD_STATUS.get(); }

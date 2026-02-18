@@ -12,6 +12,7 @@ import javax.swing.ImageIcon;
 import com.ui.*;
 import javafx.geometry.Pos;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -70,37 +71,30 @@ public class FlightPage implements Page {
         mapImageView.setFitHeight(380);
         mapImageView.imageProperty().bind(mapService.getMapImageObjectProperty());
 
-        ImageView droneIcon = new ImageView(new Image("Images/drone.png"));
-        ImageView homeIcon = new ImageView(new Image("Images/home.png"));
-        ImageView targetIcon = new ImageView(new Image("Images/target.png"));
-
-        droneIcon.setFitWidth(32);
-        droneIcon.setFitHeight(32);
-        droneIcon.setPreserveRatio(true);
-
-        homeIcon.setFitWidth(32);
-        homeIcon.setFitHeight(32);
-        homeIcon.setPreserveRatio(true);
-                
-        targetIcon.setFitWidth(32);
-        targetIcon.setFitHeight(32);
-        targetIcon.setPreserveRatio(true);
-
-        droneIcon.translateXProperty().bind(mapService.getDroneXProperty());
-        droneIcon.translateYProperty().bind(mapService.getDroneYProperty());
-
-        homeIcon.translateXProperty().bind(mapService.getHomeXProperty());
-        homeIcon.translateYProperty().bind(mapService.getHomeYProperty());
-
-        targetIcon.translateXProperty().bind(mapService.getTargetXProperty());
-        targetIcon.translateYProperty().bind(mapService.getTargetYProperty());
-
+        ImageView droneIcon = reactiveMapIcon("Images/drone.png", mapService.getDroneXProperty(), mapService.getDroneYProperty());
+        ImageView homeIcon = reactiveMapIcon("Images/home.png", mapService.getHomeXProperty(), mapService.getHomeYProperty());
+        ImageView targetIcon = reactiveMapIcon("Images/target.png", mapService.getTargetXProperty(), mapService.getTargetYProperty());
+        
         StackPane mapStack = new StackPane();
 
         mapStack.getChildren().addAll(mapImageView, droneIcon, homeIcon, targetIcon);
         mapPanel.setPadding(new Insets(10, 20, 0, 25));
         mapPanel.getChildren().addAll(background, mapStack);
         return mapPanel;
+    }
+
+    private ImageView reactiveMapIcon(String imagePath, IntegerProperty xProperty, IntegerProperty yProperty) {
+        ImageView icon = new ImageView(new Image(imagePath));
+
+        icon.setFitWidth(32);
+        icon.setFitHeight(32);
+        icon.setPreserveRatio(true);
+
+        icon.translateXProperty().bind(xProperty);
+        icon.translateYProperty().bind(yProperty);
+        icon.visibleProperty().bind(data.connectedToDroneProperty());
+
+        return icon;
     }
 
     private Pane optionPanel() {

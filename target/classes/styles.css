@@ -101,7 +101,13 @@
     -fx-min-width: 120px;
 }
 
-
 .update-settings-button:pressed {
     -fx-background-color: #85a883;
+}
+
+.test-button {
+    -fx-background-radius: 12;
+    -fx-background-color: #b0b0b0;
+    -fx-min-width: 160;
+    -fx-min-height: 60;
 }
