@@ -1,4 +1,5 @@
 package com.ui.pages;
+
 import javafx.scene.layout.*;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Label;
@@ -9,8 +10,9 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.text.Font;
 import javafx.geometry.Insets;
-import com.ui.*;
 import javafx.geometry.Pos;
+
+import com.ui.*;
 
 public class ConnectionPage implements Page {
     // --------------
@@ -23,17 +25,19 @@ public class ConnectionPage implements Page {
     private Control control;
     private CommandService command;
     private Settings settings;
+    private Notifications notifications;
 
     // --------------
     // GENERAL
     // --------------
 
-    public ConnectionPage(Data data, Control control, CommandService command, Settings settings, Logging logging) {
+    public ConnectionPage(Data data, Control control, CommandService command, Settings settings, Logging logging, Notifications notifications) {
         this.data = data;
         this.control = control;
         this.logging = logging;
         this.command = command;
         this.settings = settings;
+        this.notifications = notifications;
 
         main = new BorderPane();
         main.setLeft(connectionPanel());
@@ -82,7 +86,9 @@ public class ConnectionPage implements Page {
                 settings.setConnectionAddress(addressField.getText());
                 settings.setConnectionPort(Integer.parseInt(portField.getText())); 
                 command.connectToDroneAsync();
+                notifications.noteInfo("Connecting to drone");
             } catch (NumberFormatException a) {
+                notifications.noteError("Failed to connect. Ensure proper parameters", 8);
                 logging.logError("Failed to set drone connection parameters - Follow String/int format.");
             }});
         connectButton.setTextFill(Color.web("#1b1b1b"));
@@ -169,14 +175,38 @@ public class ConnectionPage implements Page {
         healthPanel.setPadding(new Insets(0));
 
         // Rerun Tests
-
+        // Binding
         Button testButton = new Button("Rerun Tests");
-        testButton.setOnAction(e -> control.checkHealthAll());
-        testButton.setTextFill(Color.web("#1b1b1b"));
-        testButton.setStyle("-fx-background-color: #98afef");
+        testButton.setOnAction(e -> {
+            if(data.isConnectedToDrone()) {
+                command.runAllHealthChecksAsync();
+                notifications.noteInfo("Running tests");
+            } else {
+                notifications.noteError("Not connected to drone");
+            }
+            
+        });
+
+        testButton.backgroundProperty().bind(
+            Bindings.when(data.connectedToDroneProperty())
+                    .then(new Background(new BackgroundFill(
+                    Color.web("#a198ee"), 
+                    new CornerRadii(8), null)))
+                    .otherwise(new Background(new BackgroundFill(
+                    Color.web("#232323"), 
+                    new CornerRadii(8), null))));
+
+        testButton.textFillProperty().bind(
+            Bindings.when(data.droneArmedProperty())
+                    .then(Color.web("#1c1c1c"))
+                    .otherwise(Color.web("#e9e9e9")));
+        
+        // Visuals
         testButton.setMinWidth(300);
         testButton.setMinHeight(50);
         testButton.setFont(new Font(25));
+
+        // Adding and Return
         healthBox.setAlignment(Pos.CENTER);
 
         healthBox.getChildren().addAll(healthPanel, testButton);

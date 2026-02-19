@@ -1,4 +1,5 @@
 package com.ui.pages;
+
 import javafx.scene.layout.*;
 import javafx.geometry.Insets;
 import javafx.scene.paint.Color;
@@ -7,13 +8,14 @@ import javafx.scene.text.Font;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
-import java.awt.Desktop;
-import java.io.File;
 import javafx.scene.control.Label;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Pos;
+
+import java.awt.Desktop;
+import java.io.File;
 
 import com.ui.*;
 
@@ -24,20 +26,23 @@ public class ConfigurationPage implements Page {
     private BorderPane main;
     private CommandService command;
     private FileManager fileManager;
+    Notifications notifications;
     private Data data;
     private Settings settings;
     private Pane[] menuPages;
     IntegerProperty selectedMenuPage = new SimpleIntegerProperty(0);
+
     
     // --------------
     // GENERAL
     // --------------
 
-    public ConfigurationPage(Data data, CommandService command, Settings settings, FileManager fileManager) {
+    public ConfigurationPage(Data data, CommandService command, Settings settings, FileManager fileManager, Notifications notifications) {
         this.command = command;
         this.data = data;
         this.settings = settings;
         this.fileManager = fileManager;
+        this.notifications = notifications;
         menuPages = new Pane[2]; // Replace with number of pages
         menuPages[0] = telemetryPanel();
         menuPages[1] = systemPanel();
@@ -140,6 +145,7 @@ public class ConfigurationPage implements Page {
             settings.setCameraResX(Integer.parseInt(resXField.getText()));
             settings.setCameraResY(Integer.parseInt(resYField.getText()));
             settings.setPollRate(Integer.parseInt(pollTextField.getText()));
+            notifications.noteInfo("Settings updated");
         });
 
         options.getChildren().addAll(
@@ -251,6 +257,7 @@ public class ConfigurationPage implements Page {
             settings.setMapResX(Integer.parseInt(mapResField.getText()));
             settings.setMapResY(Integer.parseInt(mapResYField.getText()));
             settings.setMapPollRate(Integer.parseInt(mapPollField.getText()));
+            notifications.noteInfo("Settings updated");
         });
 
         options.getChildren().addAll(

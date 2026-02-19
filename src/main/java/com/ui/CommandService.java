@@ -1,17 +1,25 @@
 package com.ui;
 
+import javafx.application.Platform;
+import javafx.concurrent.Task;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javafx.application.Platform;
-import javafx.concurrent.Task;
-
 public class CommandService {
+    // --------------
+    // VARIABLES
+    // --------------
+
     private final ExecutorService executor = Executors.newFixedThreadPool(5);
     private Control control;
     private Data data;
     private Logging logging;
+
+    // --------------
+    // GENERAL
+    // --------------
 
     public CommandService(Data data, Control control, Logging logging) {
         this.control = control;
@@ -22,10 +30,10 @@ public class CommandService {
     public void stop() {
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
 
-                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                     // Log shutdown failure.
                     Thread.currentThread().interrupt();
                 }

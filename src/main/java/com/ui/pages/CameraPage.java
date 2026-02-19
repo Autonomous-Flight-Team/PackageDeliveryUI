@@ -1,5 +1,5 @@
 package com.ui.pages;
-import com.ui.*;
+
 import javafx.geometry.Insets;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -13,8 +13,11 @@ import javafx.geometry.Pos;
 import javafx.scene.image.WritableImage;
 import javafx.embed.swing.*;
 import javafx.application.Platform;
-import java.awt.image.BufferedImage;
 import javafx.beans.binding.Bindings;
+
+import java.awt.image.BufferedImage;
+
+import com.ui.*;
 
 public class CameraPage implements Page {
     // --------------
@@ -30,14 +33,17 @@ public class CameraPage implements Page {
 
     private Data data;
     private CommandService command;
+    private Notifications notifications;
 
     // --------------
     // GENERAL
     // --------------
 
-    public CameraPage(Data data, CommandService command) {
+    public CameraPage(Data data, CommandService command, Notifications notifications) {
         this.data = data;
         this.command = command;
+        this.notifications = notifications;
+        
         main = new BorderPane();
         bottomImageView = new ImageView(new Image("Live/cameraFront.png"));
         frontImageView = new ImageView(new Image("Live/cameraFront.png"));
@@ -108,16 +114,56 @@ public class CameraPage implements Page {
         optionPane.setAlignment(Pos.CENTER);
 
         // Create buttons and logic
-        Button armButton = new Button("ARM");
-        armButton.setOnAction(e -> command.tryArmDroneAsync());
+                Button armButton = new Button("ARM");
+        armButton.setOnAction(e -> { 
+            if(data.isConnectedToDrone()) {
+                command.tryArmDroneAsync();
+            } else {
+                notifications.noteCaution("Not connected to drone");
+            }
+        });
+
         Button flyButton = new Button("FLY");
-        flyButton.setOnAction(e -> command.startFlightAsync());
+        flyButton.setOnAction(e ->  {
+            if(data.isDroneArmed()) {
+                command.startFlightAsync();
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }  
+        });
+
         Button returnButton = new Button("RTH");
-        returnButton.setOnAction(e -> command.returnHomeAsync());
+        returnButton.setOnAction(e -> {
+            if(data.isDroneInFlight()) {
+                command.returnHomeAsync();
+            } else if(data.isDroneArmed()) {
+                command.returnHomeAsync();
+                notifications.noteCaution("Command sent, but drone isn't flying");
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }
+        });
+
         Button landButton = new Button("LAND");
-        landButton.setOnAction(e -> command.landAsync());
+        landButton.setOnAction(e -> {
+            if(data.isDroneInFlight()) {
+                command.landAsync();
+            } else if(data.isDroneArmed()) {
+                command.landAsync();
+                notifications.noteCaution("Command sent, but drone isn't flying");
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }
+        });
+
         Button killButton = new Button("KILL");
-        killButton.setOnAction(e -> command.killAsync());
+        killButton.setOnAction(e ->  {
+            if(data.isDroneArmed()) {
+                command.killAsync();
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }  
+        });
         
         armButton.backgroundProperty().bind(
             Bindings.when(data.connectedToDroneProperty())

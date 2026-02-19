@@ -1,4 +1,5 @@
 package com.ui.pages;
+
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.control.Button;
@@ -6,15 +7,13 @@ import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import javafx.scene.shape.Rectangle;
 import javafx.geometry.Insets;
-
-import javax.swing.ImageIcon;
-
-import com.ui.*;
 import javafx.geometry.Pos;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
+import com.ui.*;
 
 public class FlightPage implements Page {
     // --------------
@@ -27,16 +26,18 @@ public class FlightPage implements Page {
     private Data data;
     private CommandService command;
     private MapService mapService;
+    private Notifications notifications;
 
 
     // --------------
     // GENERAL
     // --------------
 
-    public FlightPage(Data data, CommandService command, MapService mapService) {
+    public FlightPage(Data data, CommandService command, MapService mapService, Notifications notifications) {
         this.data = data;
         this.command = command;
         this.mapService = mapService;
+        this.notifications = notifications;
         
         main = new BorderPane();
 
@@ -63,9 +64,7 @@ public class FlightPage implements Page {
         Rectangle background = new Rectangle(395, 405, Color.web("#e7e7e7"));
         background.setArcHeight(30);
         background.setArcWidth(30);
-        // TODO functionality: pull position data to get imagery from google maps, used center,
-        // dir, xwidth and ywidth to place the drone icons. Placehold locations for now - build out 
-        // placement functionality in modules
+
         ImageView mapImageView = new ImageView();
         mapImageView.setFitWidth(360);
         mapImageView.setFitHeight(380);
@@ -74,7 +73,8 @@ public class FlightPage implements Page {
         ImageView droneIcon = reactiveMapIcon("Images/drone.png", mapService.getDroneXProperty(), mapService.getDroneYProperty());
         ImageView homeIcon = reactiveMapIcon("Images/home.png", mapService.getHomeXProperty(), mapService.getHomeYProperty());
         ImageView targetIcon = reactiveMapIcon("Images/target.png", mapService.getTargetXProperty(), mapService.getTargetYProperty());
-        
+        //TODO: Add the package location to flight data, etc.
+
         StackPane mapStack = new StackPane();
 
         mapStack.getChildren().addAll(mapImageView, droneIcon, homeIcon, targetIcon);
@@ -108,15 +108,55 @@ public class FlightPage implements Page {
 
         // Create buttons and logic
         Button armButton = new Button("ARM");
-        armButton.setOnAction(e -> command.tryArmDroneAsync());
+        armButton.setOnAction(e -> { 
+            if(data.isConnectedToDrone()) {
+                command.tryArmDroneAsync();
+            } else {
+                notifications.noteCaution("Not connected to drone");
+            }
+        });
+
         Button flyButton = new Button("FLY");
-        flyButton.setOnAction(e -> command.startFlightAsync());
+        flyButton.setOnAction(e ->  {
+            if(data.isDroneArmed()) {
+                command.startFlightAsync();
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }  
+        });
+
         Button returnButton = new Button("RTH");
-        returnButton.setOnAction(e -> command.returnHomeAsync());
+        returnButton.setOnAction(e -> {
+            if(data.isDroneInFlight()) {
+                command.returnHomeAsync();
+            } else if(data.isDroneArmed()) {
+                command.returnHomeAsync();
+                notifications.noteCaution("Command sent, but drone isn't flying");
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }
+        });
+
         Button landButton = new Button("LAND");
-        landButton.setOnAction(e -> command.landAsync());
+        landButton.setOnAction(e -> {
+            if(data.isDroneInFlight()) {
+                command.landAsync();
+            } else if(data.isDroneArmed()) {
+                command.landAsync();
+                notifications.noteCaution("Command sent, but drone isn't flying");
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }
+        });
+
         Button killButton = new Button("KILL");
-        killButton.setOnAction(e -> command.killAsync());
+        killButton.setOnAction(e ->  {
+            if(data.isDroneArmed()) {
+                command.killAsync();
+            } else {
+                notifications.noteCaution("Drone not armed");
+            }  
+        });
         
         armButton.backgroundProperty().bind(
             Bindings.when(data.connectedToDroneProperty())

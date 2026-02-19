@@ -2,19 +2,19 @@ package com.ui;
 
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
-
 import javafx.scene.image.Image;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-
-import com.ui.lib.*;
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
+
+import com.ui.lib.*;
 
 public class MapService {
     Data data;

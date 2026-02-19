@@ -1,5 +1,7 @@
 package com.ui;
+
 import javafx.beans.property.*;
+
 import java.awt.image.BufferedImage;
 
 import com.ui.lib.Position;

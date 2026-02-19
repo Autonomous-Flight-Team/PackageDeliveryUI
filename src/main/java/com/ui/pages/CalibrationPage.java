@@ -12,6 +12,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.beans.binding.Bindings;
 import javafx.scene.shape.Rectangle;
+
 import com.ui.*;
 
 public class CalibrationPage implements Page {
@@ -22,6 +23,8 @@ public class CalibrationPage implements Page {
     private BorderPane main;
     private Data data;
     private CommandService command;
+    private Notifications notifications;
+
     private Pane[] menuPages;
     IntegerProperty selectedMenuPage = new SimpleIntegerProperty(0);
 
@@ -29,9 +32,10 @@ public class CalibrationPage implements Page {
     // GENERAL
     // --------------
 
-    public CalibrationPage(Data data, CommandService command) {
+    public CalibrationPage(Data data, CommandService command, Notifications notifications) {
         this.data = data;
         this.command = command;
+        this.notifications = notifications;
 
         main = new BorderPane();
         main.setLeft(menuPanel());
@@ -120,12 +124,25 @@ public class CalibrationPage implements Page {
 
         Button allMotorButton = testButton("All Motor Spinup", data.testStatusMotorSpinAllProperty());
         Button seqMotorButton = testButton("Sequential Motor Spinup", data.testStatusMotorSpinSeqProperty());
-        //Button payloadAcq = testButton("Payload Acquisition", data.testStatusPayloadAcqProperty());
 
         // Element behaviour
-        allMotorButton.setOnAction(e ->  command.testMotorSpinAllAsync());
-        seqMotorButton.setOnAction(e ->  command.testMotorSpinSeqAsync());
-        //payloadAcq.setOnAction(e -> command.testPayloadAcqAsync());
+        allMotorButton.setOnAction(e -> {
+            if(data.isConnectedToDrone()) {
+                notifications.noteInfo("Starting test");
+                command.testMotorSpinAllAsync();
+            } else {
+                notifications.noteCaution("Not connected to drone");
+            }
+        });
+
+        seqMotorButton.setOnAction(e -> {
+            if(data.isConnectedToDrone()) {
+                notifications.noteInfo("Starting test");
+                command.testMotorSpinSeqAsync();
+            } else {
+                notifications.noteCaution("Not connected to drone");
+            }
+        });
 
         // Element adding and return
 
@@ -165,7 +182,14 @@ public class CalibrationPage implements Page {
         Button payloadAcq = testButton("Payload Acquisition", data.testStatusPayloadAcqProperty());
 
         // Element behaviour
-        payloadAcq.setOnAction(e -> command.testPayloadAcqAsync());
+        payloadAcq.setOnAction(e -> {
+            if(data.isConnectedToDrone()) {
+                notifications.noteInfo("Starting test");
+                command.testPayloadAcqAsync();
+            } else {
+                notifications.noteCaution("Not connected to drone");
+            }
+        });
 
         // Element adding and return
 

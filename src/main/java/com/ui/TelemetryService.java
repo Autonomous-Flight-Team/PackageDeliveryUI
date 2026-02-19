@@ -1,10 +1,10 @@
 package com.ui;
+import javafx.application.Platform;
+
 import org.json.simple.JSONObject;
 
 import com.ui.lib.Position;
 import com.ui.lib.Vector3;
-
-import javafx.application.Platform;
 
 public class TelemetryService {
     Data data;
