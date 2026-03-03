@@ -2,7 +2,6 @@ package com.ui;
 
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -107,7 +106,7 @@ public class TestControl extends Control {
         Flight[] flights = new Flight[1];
         Position[] waypoints = new Position[1];
         waypoints[0] = new Position(-10,-10, 0);
-        flights[0] = new Flight("Example Flight", "The only available flight", new Position(10,10, 0), new Position(-10,10, 0), waypoints);
+        flights[0] = new Flight("Example Flight", "The only available flight", new Position(10, 10, 0), new Position(0, 0, 0), new Position(-10, 10, 0), waypoints);
         return flights;
     }
 

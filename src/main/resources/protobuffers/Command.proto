@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message Command {
+    uint32 command_index = 1;
+}

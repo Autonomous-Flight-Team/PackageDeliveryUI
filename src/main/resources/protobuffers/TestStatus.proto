@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message TestStatus {
+    bool motorSpinAll = 1;
+    bool motorSpinSeq = 2;
+    bool payloadActuate = 3;
+}

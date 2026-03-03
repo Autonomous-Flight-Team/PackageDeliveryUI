@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message HealthStatus {
+    bool gps = 1;
+    bool bat = 2;
+    bool mtr = 3;
+    bool imu = 4;
+    bool log = 5;
+    bool cam = 6;
+    bool str = 7;
+    bool rdo = 8;
+    bool phk = 9;
+}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+// Coordinate
+message Coordinate {
+    double latitude = 1;   // decimal degrees
+    double longitude = 2;  // decimal degrees
+    double altitude = 3;   // meters
+}
+
+// Flight Def
+message Flight {
+    string name = 1;
+    string description = 2;
+
+    Coordinate home_position = 3;
+    Coordinate payload_position = 4;
+    Coordinate target_position = 5;
+
+    repeated Coordinate waypoints = 6;
+}
+
+message FlightList {
+    repeated Flight flights = 1;
+}

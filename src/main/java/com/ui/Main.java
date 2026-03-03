@@ -74,7 +74,7 @@ public class Main extends Application {
 
         // Load pages
         Page connectionPage = new ConnectionPage(data, control, commandService, settings, logging, notifications);
-        Page configurationPage = new ConfigurationPage(data, commandService, settings, fileManager, notifications);
+        Page configurationPage = new ConfigurationPage(data, commandService, mapService, settings, fileManager, notifications);
         Page calibrationPage = new CalibrationPage(data, commandService, notifications);
         Page flightPage = new FlightPage(data, commandService, mapService, notifications);
         Page cameraPage = new CameraPage(data,commandService, notifications);

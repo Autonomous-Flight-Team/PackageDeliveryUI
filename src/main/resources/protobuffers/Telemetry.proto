@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+// Layer 3 Messages
+message Vector3 {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}
+
+message GlobalPosition {
+    double latitude = 1;
+    double longitude = 2;
+    double altitude = 3;
+}
+
+message Attitude {
+    double roll = 1;
+    double pitch = 2;
+    double yaw = 3;
+}
+
+// Layer 2 Messages
+
+message Kinematics {
+    double altitude = 1;
+    double speed = 2;
+    Vector3 position_relative = 3;
+    GlobalPosition position_global = 4;
+    Attitude attitude = 5;
+    Vector3 velocity = 6;
+    Vector3 acceleration      = 7;
+}
+
+message Battery {
+    double max_capacity = 1;
+    double current_capacity = 2;
+    double motor_voltage_draw = 3;
+}
+
+message Radio {
+    double connection_bandwidth = 1;
+}
+
+enum FlightStatus {
+    IDLE = 0;
+    IN_FLIGHT = 1;
+    PAUSED = 2;
+    COMPLETE = 3;
+    EMERGENCY = 4;
+}
+
+message Flight {
+    double elapsed_time_ms = 1;
+    string elapsed_time_string = 2;
+    double next_target_distance = 3;
+    string name = 4;
+    FlightStatus status = 5;
+}
+
+message Payload {
+    bool status = 1;
+}
+
+// Layer 1 message
+
+message TelemetryFrame {
+    Kinematics kinematics = 1;
+    Battery battery = 2;
+    Radio radio = 3;
+    Flight flight = 4;
+    Payload payload = 5;
+}

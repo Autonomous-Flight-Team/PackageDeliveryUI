@@ -9,43 +9,57 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 import java.awt.Desktop;
 import java.io.File;
+import java.util.List;
 
 import com.ui.*;
+import com.ui.lib.*;
 
-public class ConfigurationPage implements Page {
+public class ConfigurationPage implements Page, Listener {
     // --------------
     // VARIABLES
     // --------------
     private BorderPane main;
     private CommandService command;
     private FileManager fileManager;
+    private MapService mapService;
     Notifications notifications;
     private Data data;
     private Settings settings;
     private Pane[] menuPages;
+    private Pane[] flightPages;
     IntegerProperty selectedMenuPage = new SimpleIntegerProperty(0);
+    IntegerProperty selectedFlightPage = new SimpleIntegerProperty(0);
+    BorderPane flightPane;
 
-    
     // --------------
     // GENERAL
     // --------------
 
-    public ConfigurationPage(Data data, CommandService command, Settings settings, FileManager fileManager, Notifications notifications) {
+    public ConfigurationPage(Data data, CommandService command, MapService mapService, Settings settings, FileManager fileManager, Notifications notifications) {
         this.command = command;
         this.data = data;
+        this.mapService = mapService;
         this.settings = settings;
         this.fileManager = fileManager;
         this.notifications = notifications;
-        menuPages = new Pane[2]; // Replace with number of pages
-        menuPages[0] = telemetryPanel();
-        menuPages[1] = systemPanel();
+
+        command.addListener(this);
+
+        menuPages = new Pane[3]; // Replace with number of pages
+        menuPages[0] = flightSelectPanel();
+        menuPages[1] = telemetryPanel();
+        menuPages[2] = systemPanel();
         main = new BorderPane();
         main.setLeft(menuPanel());
         main.setStyle("-fx-background-color: #d7d7d3;");
@@ -69,8 +83,8 @@ public class ConfigurationPage implements Page {
         VBox menuBox = new VBox(10);
 
         Button[] menuButtons = {
+            new Button("Flight"),
             new Button("Telemetry"),
-            new Button("Drone"),
             new Button("System")
         };
 
@@ -96,7 +110,6 @@ public class ConfigurationPage implements Page {
                                 : "-fx-text-fill: #eeeeee",
                                 selectedMenuPage));
 
-
             menuBox.getChildren().add(menuButtons[index]);
         }
 
@@ -106,6 +119,158 @@ public class ConfigurationPage implements Page {
         menuPanel.setPadding(new Insets(30, 0, 0, 30));
     
         return menuPanel;
+    }
+
+    // --------------
+    // FLIGHT SELECT
+    // --------------
+
+    private Pane flightSelectPanel() {
+        StackPane flightStack = new StackPane();
+        Rectangle background = new Rectangle(200, 420, Color.web("#e7e7e7"));
+        flightPane = new BorderPane();
+        background.setArcWidth(30);
+        background.setArcHeight(30);
+
+        // Create flight selection list (scroll box)
+
+        ScrollPane s1 = new ScrollPane();
+        VBox buttonBox = new VBox(5);
+        Label scrollTitle = new Label("Flight Select");
+        buttonBox.getChildren().add(scrollTitle);
+        flightStack.setAlignment(Pos.TOP_CENTER);
+
+        s1.setMaxWidth(200);
+
+        if(data.getAvailableFlights() != null) {
+            flightPages = new Pane[data.getAvailableFlights().length];
+
+            for(int i = 0; i < data.getAvailableFlights().length; i++) {
+                final int index = i;
+                buttonBox.getChildren().add(createFlightButton(data.getAvailableFlights()[index], index));
+                flightPages[index] = createFlightDescription(data.getAvailableFlights()[index]);
+            }
+
+            s1.setContent(buttonBox);
+
+            flightStack.getChildren().addAll(background, s1);
+            flightStack.setPadding(new Insets(30, 30, 0, 0));
+            flightPane.setLeft(flightStack);
+        }
+
+        return flightPane;
+    }
+
+    private StackPane createFlightDescription(Flight f) {
+        StackPane flightStack = new StackPane();
+        BorderPane flightPane = new BorderPane();
+        VBox flightInfoBox = new VBox(10);
+        StackPane flightMapStack = new StackPane();
+        // Background
+        Rectangle background = new Rectangle(500, 380, Color.web("#b8b8b8"));
+        background.setArcWidth(30);
+        background.setArcHeight(30);
+
+        // Description and Selection
+        Label flightTitle = new Label(f.getFlightName());
+        Label flightDescription = new Label(f.getFlightDescription());
+
+        MapData flightMap = mapService.retrieveMapData(f, null);
+
+        Button selectButton = new Button();
+
+        selectButton.getStyleClass().add("flight-select-button");
+        selectButton.backgroundProperty().bind(
+                    Bindings.createObjectBinding(
+                            () -> data.flightNameProperty().get() == f.getFlightName() 
+                                ? new Background(new BackgroundFill(
+                                Color.web("#6be09c"), 
+                                new CornerRadii(8), null))
+                                : new Background(new BackgroundFill(
+                                Color.web("#313131"), 
+                                new CornerRadii(8), null)), data.flightNameProperty()));
+
+        selectButton.backgroundProperty().bind(
+                    Bindings.createObjectBinding(
+                            () -> data.flightNameProperty().get() == f.getFlightName() 
+                                ? new Background(new BackgroundFill(
+                                Color.web("#6be09c"), 
+                                new CornerRadii(8), null))
+                                : new Background(new BackgroundFill(
+                                Color.web("#313131"), 
+                                new CornerRadii(8), null)), data.flightNameProperty()));
+
+        selectButton.textProperty().bind(
+                    Bindings.createObjectBinding(
+                            () -> data.getFlightName() == f.getFlightName() 
+                                ? "Selected": "Select Flight"));
+
+        flightInfoBox.getChildren().addAll(flightTitle, flightDescription, selectButton);
+
+        // Place Image
+        ImageView mapImageView = new ImageView();
+        mapImageView.setFitWidth(216);
+        mapImageView.setFitHeight(228);
+        mapImageView.setImage(SwingFXUtils.toFXImage(flightMap.getMap(), null));
+
+        // Place Icons
+        ImageView droneIcon = createMapIcon("Images/drone.png", (int) flightMap.getDroneOffset().getX(), (int) flightMap.getDroneOffset().getY());
+        ImageView homeIcon = createMapIcon("Images/home.png", (int) flightMap.getHomeOffset().getX(), (int) flightMap.getHomeOffset().getY());
+        ImageView targetIcon = createMapIcon("Images/target.png", (int) flightMap.getTargetOffset().getX(), (int) flightMap.getTargetOffset().getY());
+        ImageView payloadIcon = createMapIcon("Images/package.png", (int) flightMap.getPayloadOffset().getX(), (int) flightMap.getPayloadOffset().getY());
+        
+        flightMapStack.getChildren().addAll(mapImageView, droneIcon, homeIcon, targetIcon, payloadIcon);
+
+        // Place stacks in border pane
+        flightPane.setLeft(flightMapStack);
+        flightPane.setRight(flightInfoBox);
+
+        flightStack.getChildren().addAll(background, flightPane);
+        flightStack.setPadding(new Insets(15));
+
+        // Create flight map panel.
+        return flightStack;
+    }
+
+    private ImageView createMapIcon(String imagePath, int xOffset, int yOffset) {
+        ImageView icon = new ImageView(new Image(imagePath));
+
+        icon.setFitWidth(32);
+        icon.setFitHeight(32);
+        icon.setPreserveRatio(true);
+
+        icon.setTranslateX(xOffset);;
+        icon.setTranslateY(yOffset);
+
+        return icon;
+    }
+
+    private Button createFlightButton(Flight f, int i) {
+        Button flightButton = new Button(f.getFlightName());
+        flightButton.setOnAction(e -> {showFlightPage(i);});
+        flightButton.backgroundProperty().bind(
+                    Bindings.createObjectBinding(
+                            () -> selectedFlightPage.get() == i 
+                                ? new Background(new BackgroundFill(
+                                Color.web("#6ba9e0"), 
+                                new CornerRadii(8), null))
+                                : new Background(new BackgroundFill(
+                                Color.web("#313131"), 
+                                new CornerRadii(8), null)), selectedFlightPage));
+
+        flightButton.textFillProperty().bind(
+                    Bindings.createObjectBinding(
+                            () -> selectedFlightPage.get() == i 
+                                ? Color.web("#eeeeee")
+                                : Color.web("#313131"), 
+                                selectedFlightPage));
+
+        return flightButton;
+    }
+
+    private void showFlightPage(int i) {
+        selectedFlightPage.set(i);
+        flightPane.setRight(flightPages[i]);
     }
 
     // --------------
@@ -338,5 +503,15 @@ public class ConfigurationPage implements Page {
 
     public static void openFileLocation(String path) {
         Desktop.getDesktop().browseFileDirectory(new File(path));
+    }
+
+    @Override
+    public void onMessageReceived(String message) {
+        if(message.equals("FLIGHT_UPDATE")) {
+            // Recreate flight selection panel with new flight information.
+            menuPages[0] = flightSelectPanel(); 
+            selectPage(selectedMenuPage.get());
+            showFlightPage(selectedFlightPage.get());
+        }
     }
 }

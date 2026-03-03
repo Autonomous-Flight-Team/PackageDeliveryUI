@@ -111,3 +111,10 @@
     -fx-min-width: 160;
     -fx-min-height: 60;
 }
+
+.flight-select-button {
+    -fx-background-radius: 12;
+    -fx-background-color: #b0b0b0;
+    -fx-min-width: 160;
+    -fx-min-height: 60;
+}

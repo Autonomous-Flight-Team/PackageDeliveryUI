@@ -7,7 +7,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class CommandService {
+import com.ui.lib.*;
+
+public class CommandService extends Broadcaster<Listener> {
     // --------------
     // VARIABLES
     // --------------
@@ -44,6 +46,14 @@ public class CommandService {
         }
     }
 
+    public void sendMessage(String message) {
+        logging.logInfo("Broadcasting " + message + ".");
+        // Notify listeners via the BaseSubject's notifyListeners method
+        notifyListeners(listener -> 
+            listener.onMessageReceived(message)
+        );
+    }
+
     // --------------
     // CONNECTION
     // --------------
@@ -54,6 +64,7 @@ public class CommandService {
             protected Void call() throws Exception {
                 logging.logCommand("Connecting to drone");
                 control.tryConnectToDrone();
+                updateFlightsAsync();
                 return null;
             }
         };
@@ -94,7 +105,7 @@ public class CommandService {
         executor.submit(armTask);
     }
 
-    public void tryDisarmDronAsync() {
+    public void tryDisarmDroneAsync() {
         Task<Void> disarmTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -211,6 +222,7 @@ public class CommandService {
                 logging.logCommand("Updating flight registry");
                 Platform.runLater(() -> {data.setAvailableFlights(control.getAvailableFlights());});
                 Platform.runLater(() -> {data.setSelectedFlight(0);});
+                Platform.runLater(() -> {sendMessage("FLIGHT_UPDATE");});
                 return null;
             }
         };

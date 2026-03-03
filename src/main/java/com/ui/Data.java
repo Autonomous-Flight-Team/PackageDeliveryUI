@@ -136,7 +136,7 @@ public class Data {
     // HEALTH_PIXHAWK
     public boolean isHealthPixhawk() { return HEALTH_PIXHAWK.get(); }
     public void setHealthPixhawk(boolean value) { HEALTH_PIXHAWK.set(value); }
-public BooleanProperty healthPixhawkProperty() { return HEALTH_PIXHAWK; }
+    public BooleanProperty healthPixhawkProperty() { return HEALTH_PIXHAWK; }
 
     // General Properties
     public String getDroneName() { return DRONE_NAME.get(); }

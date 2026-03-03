@@ -93,7 +93,7 @@ public class Settings {
             inputStream = Files.newInputStream(fileManager.getSettingsDir().resolve("UserSettings.json"));
             reader = new InputStreamReader(inputStream);
         } catch (FileNotFoundException e) { 
-            logging.logError("Failed to load user settings, reverting to default (Likely due to a first time launch, no need to worry if so)");
+            logging.logError("Failed to load user settings, reverting to default (Ignore for first time launch)");
         } catch (IOException e) {
             logging.logError("Failed to read settings file.");
         }
@@ -146,6 +146,7 @@ public class Settings {
             FileWriter writer = new FileWriter(fileManager.getSettingsDir() + "/UserSettings.json");
             writer.write(settings.toJSONString());
             writer.flush();
+            writer.close();
         } catch (IOException e) {
             logging.logError("Failed to save settings");
         }

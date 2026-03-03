@@ -8,6 +8,8 @@ Update flight system to have payload location options.
 Telemetry saving and review.
 Overhaul systems to make sure that data updating and logic is ready for drone connection.
 
+System for handling pages that have UI elements that need to be created/destroyed based on temporal data - (available flights, waypoint list, etc.) Just create an update function, and re-set the BorderPane.setLeft(examplePane()); to recreate the page with the new data. Have a list
+of pages that depend on temporal data, collate that data, and run the appropriate update functions when the data changes.
+
 Current work -
-- Develop the map system, based off of flight data.
 - Update the flight system properly with REST calling.

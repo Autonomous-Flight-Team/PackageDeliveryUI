@@ -7,12 +7,14 @@ public class Flight {
     private String flightDescription;
     private Position home;
     private Position target; 
+    private Position payload;
     private Position[] waypoints;
 
-    public Flight(String flightName, String flightDescription, Position home, Position target, Position[] waypoints) {
+    public Flight(String flightName, String flightDescription, Position home, Position target, Position payload, Position[] waypoints) {
         setFlightName(flightName);
         setFlightDescription(flightDescription);
         setHome(home);
+        setPayload(payload);
         setTarget(target);
         setWaypoints(waypoints);
     }
@@ -33,6 +35,10 @@ public class Flight {
         this.target = target;
     }
 
+    public void setPayload(Position payload) {
+        this.payload = payload;
+    }
+
     public void setWaypoints(Position[] waypoints) {
         this.waypoints = waypoints;
     }
@@ -51,6 +57,10 @@ public class Flight {
 
     public Position getTarget() {
         return target;
+    }
+
+    public Position getPayload() {
+        return payload;
     }
 
     public Position[] getWaypoints() {

@@ -352,7 +352,4 @@ public class FlightPage implements Page {
 
         return stack;
     }
-
-    // (Status)
-
 }
