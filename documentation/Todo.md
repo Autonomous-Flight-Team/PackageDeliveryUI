@@ -12,4 +12,7 @@ System for handling pages that have UI elements that need to be created/destroye
 of pages that depend on temporal data, collate that data, and run the appropriate update functions when the data changes.
 
 Current work -
-- Update the flight system properly with REST calling.
+- Set up broadcast system for every data related gui item that needs it.
+- Work on the telemetry review system possibly.
+- Get a solid plan of implementation down for the network / UDP side of the backend.
+- Refactor the backend with the new connection system, and overhaul the codebase to match it.

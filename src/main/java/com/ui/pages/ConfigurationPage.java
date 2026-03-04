@@ -10,6 +10,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -40,7 +41,10 @@ public class ConfigurationPage implements Page, Listener {
     private Pane[] flightPages;
     IntegerProperty selectedMenuPage = new SimpleIntegerProperty(0);
     IntegerProperty selectedFlightPage = new SimpleIntegerProperty(0);
-    BorderPane flightPane;
+    HBox flightPane;
+
+    private final int FLIGHT_MAP_IMAGE_WIDTH = 288; // TODO: Scale this up more probably.
+    private final int FLIGHT_MAP_IMAGE_HEIGHT = 304;
 
     // --------------
     // GENERAL
@@ -63,6 +67,8 @@ public class ConfigurationPage implements Page, Listener {
         main = new BorderPane();
         main.setLeft(menuPanel());
         main.setStyle("-fx-background-color: #d7d7d3;");
+        BorderPane.setAlignment(menuPages[0], Pos.CENTER); 
+        BorderPane.setAlignment(main.getLeft(), Pos.CENTER);
         selectPage(0);
     }
 
@@ -116,7 +122,7 @@ public class ConfigurationPage implements Page, Listener {
         menuBox.setAlignment(Pos.CENTER);
 
         menuPanel.getChildren().addAll(background, menuBox);
-        menuPanel.setPadding(new Insets(30, 0, 0, 30));
+        menuPanel.setPadding(new Insets(30));
     
         return menuPanel;
     }
@@ -128,19 +134,25 @@ public class ConfigurationPage implements Page, Listener {
     private Pane flightSelectPanel() {
         StackPane flightStack = new StackPane();
         Rectangle background = new Rectangle(200, 420, Color.web("#e7e7e7"));
-        flightPane = new BorderPane();
+        flightPane = new HBox();
         background.setArcWidth(30);
         background.setArcHeight(30);
 
         // Create flight selection list (scroll box)
 
         ScrollPane s1 = new ScrollPane();
-        VBox buttonBox = new VBox(5);
+        VBox buttonBox = new VBox(15);
         Label scrollTitle = new Label("Flight Select");
+        scrollTitle.setFont(new Font(20));
+        scrollTitle.setStyle("-fx-text-fill: #222222;");
+        
         buttonBox.getChildren().add(scrollTitle);
-        flightStack.setAlignment(Pos.TOP_CENTER);
-
+        buttonBox.setAlignment(Pos.CENTER);
+        
+        s1.setFitToWidth(true);
         s1.setMaxWidth(200);
+        s1.setMaxWidth(380);
+        s1.setTranslateY(50);
 
         if(data.getAvailableFlights() != null) {
             flightPages = new Pane[data.getAvailableFlights().length];
@@ -154,8 +166,8 @@ public class ConfigurationPage implements Page, Listener {
             s1.setContent(buttonBox);
 
             flightStack.getChildren().addAll(background, s1);
-            flightStack.setPadding(new Insets(30, 30, 0, 0));
-            flightPane.setLeft(flightStack);
+            flightStack.setPadding(new Insets(20));
+            flightPane.getChildren().add(flightStack);
         }
 
         return flightPane;
@@ -164,10 +176,14 @@ public class ConfigurationPage implements Page, Listener {
     private StackPane createFlightDescription(Flight f) {
         StackPane flightStack = new StackPane();
         BorderPane flightPane = new BorderPane();
-        VBox flightInfoBox = new VBox(10);
+
+        flightPane.setMaxHeight(380);
+        flightPane.setMaxWidth(460);
+        VBox flightInfoBox = new VBox(15);
+        flightInfoBox.setPadding(new Insets(10, 0, 0, 0));
         StackPane flightMapStack = new StackPane();
         // Background
-        Rectangle background = new Rectangle(500, 380, Color.web("#b8b8b8"));
+        Rectangle background = new Rectangle(500, 420, Color.web("#e7e7e7"));
         background.setArcWidth(30);
         background.setArcHeight(30);
 
@@ -178,55 +194,49 @@ public class ConfigurationPage implements Page, Listener {
         MapData flightMap = mapService.retrieveMapData(f, null);
 
         Button selectButton = new Button();
-
         selectButton.getStyleClass().add("flight-select-button");
+ 
         selectButton.backgroundProperty().bind(
                     Bindings.createObjectBinding(
                             () -> data.flightNameProperty().get() == f.getFlightName() 
                                 ? new Background(new BackgroundFill(
-                                Color.web("#6be09c"), 
+                                Color.web("#313131"), 
                                 new CornerRadii(8), null))
                                 : new Background(new BackgroundFill(
-                                Color.web("#313131"), 
-                                new CornerRadii(8), null)), data.flightNameProperty()));
-
-        selectButton.backgroundProperty().bind(
-                    Bindings.createObjectBinding(
-                            () -> data.flightNameProperty().get() == f.getFlightName() 
-                                ? new Background(new BackgroundFill(
                                 Color.web("#6be09c"), 
-                                new CornerRadii(8), null))
-                                : new Background(new BackgroundFill(
-                                Color.web("#313131"), 
                                 new CornerRadii(8), null)), data.flightNameProperty()));
 
         selectButton.textProperty().bind(
                     Bindings.createObjectBinding(
-                            () -> data.getFlightName() == f.getFlightName() 
+                            () -> data.flightNameProperty().get() == f.getFlightName() 
                                 ? "Selected": "Select Flight"));
 
         flightInfoBox.getChildren().addAll(flightTitle, flightDescription, selectButton);
 
         // Place Image
         ImageView mapImageView = new ImageView();
-        mapImageView.setFitWidth(216);
-        mapImageView.setFitHeight(228);
+        mapImageView.setFitWidth(FLIGHT_MAP_IMAGE_WIDTH);
+        mapImageView.setFitHeight(FLIGHT_MAP_IMAGE_HEIGHT);
         mapImageView.setImage(SwingFXUtils.toFXImage(flightMap.getMap(), null));
 
-        // Place Icons
-        ImageView droneIcon = createMapIcon("Images/drone.png", (int) flightMap.getDroneOffset().getX(), (int) flightMap.getDroneOffset().getY());
-        ImageView homeIcon = createMapIcon("Images/home.png", (int) flightMap.getHomeOffset().getX(), (int) flightMap.getHomeOffset().getY());
-        ImageView targetIcon = createMapIcon("Images/target.png", (int) flightMap.getTargetOffset().getX(), (int) flightMap.getTargetOffset().getY());
-        ImageView payloadIcon = createMapIcon("Images/package.png", (int) flightMap.getPayloadOffset().getX(), (int) flightMap.getPayloadOffset().getY());
+        // Place Icons (With proper offset scaling.)
+        double xFactor = (double) FLIGHT_MAP_IMAGE_WIDTH / (double) settings.getMapResX();
+        double yFactor = (double) FLIGHT_MAP_IMAGE_HEIGHT / (double) settings.getMapResY();
+
+        ImageView droneIcon = createMapIcon("Images/drone.png", (int) (flightMap.getDroneOffset().getX() * xFactor), (int) (flightMap.getDroneOffset().getY() * yFactor));
+        ImageView homeIcon = createMapIcon("Images/home.png", (int) (flightMap.getHomeOffset().getX() * xFactor), (int) (flightMap.getHomeOffset().getY() * yFactor));
+        ImageView targetIcon = createMapIcon("Images/target.png", (int) (flightMap.getTargetOffset().getX() * xFactor), (int) (flightMap.getTargetOffset().getY() * yFactor));
+        ImageView payloadIcon = createMapIcon("Images/package.png", (int) (flightMap.getPayloadOffset().getX() * xFactor), (int) (flightMap.getPayloadOffset().getY() * yFactor));
         
         flightMapStack.getChildren().addAll(mapImageView, droneIcon, homeIcon, targetIcon, payloadIcon);
 
         // Place stacks in border pane
         flightPane.setLeft(flightMapStack);
-        flightPane.setRight(flightInfoBox);
+        flightPane.setAlignment(flightPane.getLeft(), Pos.CENTER);
+        flightPane.setCenter(flightInfoBox);
 
         flightStack.getChildren().addAll(background, flightPane);
-        flightStack.setPadding(new Insets(15));
+        flightStack.setPadding(new Insets(30, 30, 30, 20));
 
         // Create flight map panel.
         return flightStack;
@@ -245,14 +255,18 @@ public class ConfigurationPage implements Page, Listener {
         return icon;
     }
 
-    private Button createFlightButton(Flight f, int i) {
+    private StackPane createFlightButton(Flight f, int i) {
+        StackPane flightButtonStack = new StackPane();
+        Rectangle background = new Rectangle(130, 50, Color.web("#313131"));
+        background.setArcWidth(20);
+        background.setArcHeight(20);
         Button flightButton = new Button(f.getFlightName());
         flightButton.setOnAction(e -> {showFlightPage(i);});
         flightButton.backgroundProperty().bind(
                     Bindings.createObjectBinding(
                             () -> selectedFlightPage.get() == i 
                                 ? new Background(new BackgroundFill(
-                                Color.web("#6ba9e0"), 
+                                Color.web("#d993f5"), 
                                 new CornerRadii(8), null))
                                 : new Background(new BackgroundFill(
                                 Color.web("#313131"), 
@@ -261,16 +275,22 @@ public class ConfigurationPage implements Page, Listener {
         flightButton.textFillProperty().bind(
                     Bindings.createObjectBinding(
                             () -> selectedFlightPage.get() == i 
-                                ? Color.web("#eeeeee")
-                                : Color.web("#313131"), 
+                                ? Color.web("#222222")
+                                : Color.web("#efefef"), 
                                 selectedFlightPage));
 
-        return flightButton;
+        flightButtonStack.getChildren().addAll(background, flightButton);
+        flightButtonStack.setAlignment(Pos.CENTER);
+        return flightButtonStack;
     }
 
     private void showFlightPage(int i) {
         selectedFlightPage.set(i);
-        flightPane.setRight(flightPages[i]);
+        if(flightPane.getChildren().size() > 1) {
+            flightPane.getChildren().set(1, flightPages[i]);
+        } else {
+            flightPane.getChildren().add(flightPages[i]);
+        }
     }
 
     // --------------
@@ -326,7 +346,7 @@ public class ConfigurationPage implements Page, Listener {
 
         options.setMaxHeight(700);
         options.setAlignment(Pos.CENTER);
-        telemetryStack.setPadding(new Insets(30, 30, 0, 0));
+        telemetryStack.setPadding(new Insets(30));
         telemetryStack.getChildren().addAll(background, options);
         return telemetryStack;
     }
@@ -438,7 +458,7 @@ public class ConfigurationPage implements Page, Listener {
 
         options.setMaxHeight(700);
         options.setAlignment(Pos.CENTER);
-        systemStack.setPadding(new Insets(30, 30, 0, 0));
+        systemStack.setPadding(new Insets(30));
         systemStack.getChildren().addAll(background, options);
         return systemStack;
     }
