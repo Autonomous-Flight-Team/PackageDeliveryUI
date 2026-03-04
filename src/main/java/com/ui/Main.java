@@ -7,9 +7,14 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+
+import java.awt.Taskbar;
+import java.awt.Toolkit;
+import java.nio.file.*;
 
 import com.ui.pages.*;
 
@@ -46,6 +51,8 @@ public class Main extends Application {
                 throwable.printStackTrace();
             });
         });
+        
+        setAppIcon("/Images/icon", stage);
         // Load scene and initial pane creation (needed by later setup functions)
         main = new BorderPane();
         Scene scene = new Scene(main, 1050, 570, Color.BEIGE);
@@ -111,6 +118,27 @@ public class Main extends Application {
         logging.stop();
         
         super.stop(); // Call parent implementation
+    }
+
+    private void setAppIcon(String path, Stage stage) {
+        String os = System.getProperty("os.name").toLowerCase();
+
+        if (os.contains("win")) {
+            stage.getIcons().add(new Image(path + ".png"));
+        } else if (os.contains("mac")) {
+            if (Taskbar.isTaskbarSupported()) {
+                Taskbar taskbar = Taskbar.getTaskbar();
+                if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                        // Use AWT Toolkit to load the image, not JavaFX Image
+                        java.awt.Image dockIcon = Toolkit.getDefaultToolkit()
+                            .getImage(getClass().getResource(path + "Mac.png"));
+                        taskbar.setIconImage(dockIcon);
+                    }
+                }
+        } else {
+            System.setProperty("javafx.application.name", "HuskyDroneView");
+            stage.getIcons().add(new Image(path + ".png"));
+        }
     }
 
     // --------------
