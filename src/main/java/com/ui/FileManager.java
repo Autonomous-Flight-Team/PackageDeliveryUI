@@ -9,15 +9,15 @@ public class FileManager {
         dataPath = getAppDataDir();
     }
 
-    public static Path getAppDataDir() {
-        String os = System.getProperty("os.name").toLowerCase();
+    public Path getAppDataDir() {
+        String osName = System.getProperty("os.name").toLowerCase();
         String home = System.getProperty("user.home");
 
         Path base;
 
-        if (os.contains("win")) {
+        if (osName.contains("win")) {
             base = Paths.get(System.getenv("APPDATA"), "DroneView");
-        } else if (os.contains("mac")) {
+        } else if (osName.contains("mac")) {
             base = Paths.get(home, "Library", "Application Support", "DroneView");
         } else {
             base = Paths.get(home, ".config", "droneview");

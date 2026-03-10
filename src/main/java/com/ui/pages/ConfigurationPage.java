@@ -189,6 +189,7 @@ public class ConfigurationPage implements Page, Listener {
 
         // Description and Selection
         Label flightTitle = new Label(f.getFlightName());
+        flightTitle.setFont(new Font(15));
         Label flightDescription = new Label(f.getFlightDescription());
 
         MapData flightMap = mapService.retrieveMapData(f, null);
@@ -212,6 +213,8 @@ public class ConfigurationPage implements Page, Listener {
                                 ? "Selected": "Select Flight"));
 
         flightInfoBox.getChildren().addAll(flightTitle, flightDescription, selectButton);
+        flightInfoBox.setPadding(new Insets(10));
+        flightInfoBox.setAlignment(Pos.CENTER);
 
         // Place Image
         ImageView mapImageView = new ImageView();

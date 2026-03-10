@@ -16,6 +16,8 @@ import java.awt.Taskbar;
 import java.awt.Toolkit;
 import java.nio.file.*;
 
+import com.fazecast.jSerialComm.*;
+
 import com.ui.pages.*;
 
 public class Main extends Application {
