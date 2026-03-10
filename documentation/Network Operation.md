@@ -1,6 +1,8 @@
 When the program is started, the network manager searches for an open serial communication port.
 There are two status variables related to an open port - A) Is a port available and B) is there a 
-talking device on the other end, in this case a drone.
+talking device on the other end, in this case a drone. A thread is started on network manager creation
+that searches for an open port matching the telemetry port name. Then, if this is true, it sends heartbeat
+requests over this port until a connection is established.
 
 Once a open serial port is found, A becomes true, and a heartbeat packet is sent over the port every
 second. Once a heartbeat is recieved back, the connection is listed as open, and B becomes true.

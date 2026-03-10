@@ -2,8 +2,9 @@ package com.ui;
 
 import static java.util.Map.entry;
 import com.fazecast.jSerialComm.*;
-import com.ui.NetworkService.Packet;
-import com.ui.NetworkService.PacketHeader;
+import com.ui.lib.*;
+
+import javafx.concurrent.Task;
 
 import java.lang.Byte;
 import java.nio.ByteBuffer;
@@ -11,51 +12,32 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Map;   
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class NetworkService {
-    private boolean portAvailable;
     private boolean connected;
     private final String TARGET_PORT_NAME = "UNKNOWN";
     private SerialPort port;
 
     private Packet[] pastPackets;
     public int sequence;
+    private boolean writingData;
 
+    private final ExecutorService executor = Executors.newFixedThreadPool(5);
+
+    // Wait for an available port to be present, checking every 1 second.
     public void ConnectOverPort() {
         Thread connectionThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
+                boolean portAvailable = false;
+
                 while(!portAvailable) {
                     if(SerialPort.getCommPort(TARGET_PORT_NAME) != null) {
                         portAvailable = true;
                         port = SerialPort.getCommPort(TARGET_PORT_NAME);
                         port.openPort();
                     }
-                }
-
-                while(!connected) {
-                    if(port.bytesAvailable() != 0) {
-                        try {
-                            Thread.sleep(20);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        
-                        // TODO: Remove this section, move it over to the core logic and handle communication
-                        // or connection detection in their with timeout logic, safe reading, etc.
-                        try {
-                            Packet packet = new Packet(readBuffer);
-                            if(packet.HEADER.PACKET_TYPE == 0x07) {
-                                connected = true;
-                                startPortListen();
-                                Thread.currentThread().interrupt();
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    Packet heartbeat = new Packet("HEARTBEAT", null);
-                    byte[] heartbeatBuffer = heartbeat.toByteEncoding();
-                    port.writeBytes(heartbeatBuffer, heartbeatBuffer.length);
 
                     try{ 
                         Thread.sleep(1000);
@@ -64,17 +46,35 @@ public class NetworkService {
                         break;
                     }
                 }
+
+                ListenOnPort();
             }
         });
 
         connectionThread.start();
     }
 
-    private void startPortListen() {
+    // Sit on the open port - wait for 2 available bytes, check if it is the sync code, and if so
+    // read into a packet.
+    private void ListenOnPort() {
+        if(!port.isOpen()) {
+            throw new IllegalStateException();
+        }
+
         Thread portThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
-                if(port.bytesAvailable() != 0) {
+                if(port.bytesAvailable() > 1) {
+                    byte[] readBuffer = new byte[2];
 
+                    port.readBytes(readBuffer, 2);
+
+                    ByteBuffer shortBuff = ByteBuffer.allocate(2);
+                    shortBuff.order(ByteOrder.LITTLE_ENDIAN);
+                    shortBuff.put(readBuffer[0]);
+                    shortBuff.put(readBuffer[1]);
+                    // CHECK FOR SYNC TODO: 
+                    readPacketData();
+                            
                 } else {
                     try{ 
                         Thread.sleep(100);
@@ -88,103 +88,84 @@ public class NetworkService {
 
         portThread.start();
     }
+
+    // Sends a packet, avoiding sending while another packet is sending.
+    public void SendPacket(Packet packet) {
+        if(!port.isOpen()) {
+            throw new IllegalStateException();
+        }
+
+        Task<Void> sendTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                while(writingData) {
+                    Thread.sleep(20);
+                }
+
+                writingData = true;
+                byte[] packetBuffer = packet.toByteEncoding();
+                port.writeBytes(packetBuffer, packetBuffer.length);
+
+                // Insert this last written packet into the packet list
+                pastPackets = Arrays.copyOfRange(pastPackets, 1, pastPackets.length);
+                pastPackets[pastPackets.length - 1] = packet;
+
+                writingData = false;
+                return null;
+            }
+        };
+
+        executor.submit(sendTask);
+    }
+
+    private void readPacketData() {
+        if(!port.isOpen()) {
+            throw new IllegalStateException();
+        }
+        
+        byte[] lengthCheckBuffer = new byte[2];
+
+        port.readBytes(lengthCheckBuffer, 2);
+
+        ByteBuffer shortBuff = ByteBuffer.allocate(2);
+        shortBuff.order(ByteOrder.LITTLE_ENDIAN);
+        shortBuff.put(lengthCheckBuffer[0]);
+        shortBuff.put(lengthCheckBuffer[1]);
+
+        short length = shortBuff.getShort();
+
+        byte[] packetBuffer = new byte[length + 7];
+        packetBuffer[0] = (byte)(0xF35 & 0xff);
+        packetBuffer[1] = (byte)((0xF35 >> 8) & 0xff);
+        packetBuffer[2] = (byte)(length & 0xff);
+        packetBuffer[3] = (byte)((length >> 8) & 0xff);
+
+        port.readBytes(packetBuffer, length + 3, 4);
+        Packet decodedPacket = new Packet(packetBuffer);
+
+        handleReadPacket(decodedPacket);
+    }
+
+    //TODO: Implement specific packet handling functions.
+    private void handleReadPacket(Packet packet) {
+        switch(packet.HEADER.PACKET_TYPE) {
+            case(0x00):
+                break;
+            case(0x01):
+                break;
+            case(0x02):
+                break;
+            case(0x03):
+                break;
+            case(0x04):
+                break;
+            case(0x05):
+                break;
+            case(0x06):
+                break;
+        }
+    } 
     
-    public class PacketHeader {
-        private final short SYNC = (short) 0xF35C; 
-        private byte PACKET_TYPE;
-        private short SEQUENCE_NUMBER;
-        private short PACKET_LENGTH;
-
-        public PacketHeader(byte PACKET_TYPE, short SEQUENCE_NUMBER, short PACKET_LENGTH) {
-            this.PACKET_TYPE = PACKET_TYPE;
-            this.SEQUENCE_NUMBER = SEQUENCE_NUMBER;
-            this.PACKET_LENGTH = PACKET_LENGTH;
-        }
-
-        public PacketHeader(byte[] buffer) {
-            ByteBuffer sequenceBuff = ByteBuffer.allocate(2);
-            sequenceBuff.order(ByteOrder.LITTLE_ENDIAN);
-            sequenceBuff.put(buffer[3]);
-            sequenceBuff.put(buffer[4]);
-
-            ByteBuffer lengthBuff = ByteBuffer.allocate(2);
-            lengthBuff.order(ByteOrder.LITTLE_ENDIAN);
-            lengthBuff.put(buffer[5]);
-            lengthBuff.put(buffer[6]);
-
-            this.PACKET_TYPE = buffer[2];
-            this.SEQUENCE_NUMBER = sequenceBuff.getShort();
-            this.PACKET_LENGTH = sequenceBuff.getShort();
-        }
-
-        public static Map<String, Byte> PACKET_TYPES = Map.ofEntries(
-            entry("TELEMETRY_UPDATE", (byte) 0x00),
-            entry("FLIGHTS_UPDATE", (byte) 0x01),
-            entry("HEALTH_UPDATE", (byte) 0x02),
-            entry("TESTS_UPDATE", (byte) 0x03),
-            entry("COMMAND", (byte) 0x04),
-            entry("CONTEXT_COMMAND", (byte) 0x05),
-            entry("ACKNOWLEDGE", (byte) 0x06),
-            entry("HEARTBEAT", (byte) 0x07),
-            entry("PACKET_DROP_NOTICE", (byte) 0x08)
-        );
-
-        public byte[] toByteEncoding() {
-            byte[] encoding = new byte[7];
-            encoding[0] = (byte)(SYNC & 0xff);
-            encoding[1] = (byte)((SYNC >> 8) & 0xff);
-            encoding[2] = PACKET_TYPE;
-            encoding[3] = (byte)(SEQUENCE_NUMBER & 0xff);
-            encoding[4] = (byte)((SEQUENCE_NUMBER >> 8) & 0xff);
-            encoding[5] = (byte)(PACKET_LENGTH & 0xff);
-            encoding[6] = (byte)((PACKET_LENGTH >> 8) & 0xff);
-            return encoding;
-        }
-    }
-
-    public class Packet {
-        private PacketHeader HEADER;
-        private byte[] DATA;
-
-        // Constructor options - Either with or without defined sequence num. On creation packet sequence is iterated up by one.
-        // On send the global sequence is updated.
-        public Packet(String packetType, byte[] DATA) {
-            if(DATA != null) {
-                HEADER = new PacketHeader(PacketHeader.PACKET_TYPES.get(packetType), (short) (sequence + 1), (short) DATA.length);
-            } else {
-                HEADER = new PacketHeader(PacketHeader.PACKET_TYPES.get(packetType), (short) (sequence + 1), (short) 0);
-            }
-        }
-
-        public Packet(String packetType, int SEQUENCE_NUMBER, byte[] DATA) {
-            HEADER = new PacketHeader(PacketHeader.PACKET_TYPES.get(packetType), (short) SEQUENCE_NUMBER, (short) DATA.length);
-        }
-
-        public Packet(byte[] buffer) {
-            if(buffer.length < 7) {
-                throw new IllegalArgumentException("Attempted packet creation with malformed header size");
-            }
-            
-            HEADER = new PacketHeader(Arrays.copyOfRange(buffer, 0, 7));
-            DATA = Arrays.copyOfRange(buffer, 0, buffer.length);
-        }
-
-        public byte[] toByteEncoding() {
-            byte[] encoding = new byte[7 + DATA.length];
-            byte[] headerEncoding = HEADER.toByteEncoding();
-
-            for(int i = 0; i < 7; i++) {
-                encoding[i] = headerEncoding[i];
-            }
-
-            for(int i = 7; i < encoding.length; i++) {
-                encoding[i] = DATA[i];
-            }
-
-            return encoding;
-        }
-    }
-
     // --------------
     // PACKET HANDLING FUNCTIONS
     // --------------
@@ -192,7 +173,4 @@ public class NetworkService {
     private void handleTelemetryPacket(byte[] telemetryBuffer) {
         // TODO: Add protobuf and extend to rest of packets.
     }
-
-
 }
-

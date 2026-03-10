@@ -7,18 +7,12 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 
 import javax.imageio.ImageIO;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.ui.lib.*;
 
@@ -45,8 +39,6 @@ public class MapService {
 
     private Thread mapThread;
     String baseURL;
-
-    private final ExecutorService executor = Executors.newFixedThreadPool(5);
 
     private static final String ACCESS_TOKEN = "pk.eyJ1IjoiYWNvbnRpbnV1bSIsImEiOiJjbWxyaHNxajkwMmQxM2dweXR5ZXJtcW9jIn0.TWmv9387dLBhFMUGuHz12g";
 
