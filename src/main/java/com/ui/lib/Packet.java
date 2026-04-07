@@ -17,7 +17,8 @@ public class Packet {
         if(DATA != null) {
             HEADER = new PacketHeader(PacketHeader.PACKET_TYPES.get(packetType), (short) (sequence), (short) DATA.length);
         } else {
-            HEADER = new PacketHeader(PacketHeader.PACKET_TYPES.get(packetType), (short) (sequence), (short) 0);
+            HEADER = new PacketHeader(PacketHeader.PACKET_TYPES.get(packetType), (short) (sequence + 1), (short) 0);
+            this.DATA = new byte[0];
         }
     }
 
@@ -31,17 +32,22 @@ public class Packet {
     }
 
     public byte[] toByteEncoding() {
-        byte[] encoding = new byte[7 + DATA.length];
-        byte[] headerEncoding = HEADER.toByteEncoding();
+        try {
+            byte[] encoding = new byte[7 + DATA.length];
+            byte[] headerEncoding = HEADER.toByteEncoding();
 
-        for(int i = 0; i < 7; i++) {
-            encoding[i] = headerEncoding[i];
+            for(int i = 0; i < 7; i++) {
+                encoding[i] = headerEncoding[i];
+            }
+
+            for(int i = 7; i < encoding.length; i++) {
+                encoding[i] = DATA[i - 7];
+            }
+
+            return encoding;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        for(int i = 7; i < encoding.length; i++) {
-            encoding[i] = DATA[i];
-        }
-
-        return encoding;
+        return null;
     }
 }

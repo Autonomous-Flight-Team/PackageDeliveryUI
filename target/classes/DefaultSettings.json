@@ -2,7 +2,6 @@
   "pollRate": 100,
   "address": "drone.net",
   "port": 10,
-  "cameraStream": false,
   "cameraResX": 480,
   "cameraResY": 360
 },{

@@ -39,6 +39,7 @@ public class Main extends Application {
 
     TelemetryService telemetryService;
     CommandService commandService;
+    NetworkService networkService;
     MapService mapService;
 
     // --------------
@@ -71,6 +72,7 @@ public class Main extends Application {
 
         // Load services
         telemetryService = new TelemetryService(data, control, settings);
+        networkService = new NetworkService();
         commandService = new CommandService(data, control, logging);
         mapService = new MapService(data, control, settings, logging);
         notifications = new Notifications(stage);

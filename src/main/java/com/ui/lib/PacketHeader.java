@@ -1,7 +1,5 @@
 package com.ui.lib;
 
-import com.ui.lib.*;
-
 import java.lang.Byte;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,15 +23,17 @@ public class PacketHeader {
         lengthBuff.order(ByteOrder.LITTLE_ENDIAN);
         lengthBuff.put(buffer[2]);
         lengthBuff.put(buffer[3]);
+        lengthBuff.flip();
 
         ByteBuffer sequenceBuff = ByteBuffer.allocate(2);
         sequenceBuff.order(ByteOrder.LITTLE_ENDIAN);
         sequenceBuff.put(buffer[5]);
         sequenceBuff.put(buffer[6]);
+        sequenceBuff.flip();
 
         this.PACKET_TYPE = buffer[4];
         this.SEQUENCE_NUMBER = sequenceBuff.getShort();
-        this.PACKET_LENGTH = sequenceBuff.getShort();
+        this.PACKET_LENGTH = lengthBuff.getShort();
     }
 
     public static Map<String, Byte> PACKET_TYPES = Map.ofEntries(
@@ -47,6 +47,11 @@ public class PacketHeader {
         entry("HEARTBEAT", (byte) 0x07),
         entry("PACKET_DROP_NOTICE", (byte) 0x08)
     );
+
+    // The byte codes for packets that should be added to the map of crit packets
+    // The byte codes for packets that will be received with unmatching sequence numbers
+    //public static Set<Packet> DROP_CRITICAL_PACKETS = 
+    //public static Set<Packet> OUT_OF_SEQ_PACKETS = 
 
     public byte[] toByteEncoding() {
         byte[] encoding = new byte[7];

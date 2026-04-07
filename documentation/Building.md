@@ -13,6 +13,10 @@ Run the installer (.pkg/.exe/.deb) on your computer, and follow the instructions
 **Linux (Debian/Ubuntu)**
 `mvn clean package && jpackage --type deb --name droneview --input target --main-jar droneview-0.1.0-jar-with-dependencies.jar --main-class com.ui.Launcher --dest dist --app-version 0.1.0 --vendor "Automated Flight Team"`
 
+# Updating
+**All Platforms**
+Simply install the newer version, and the older version will be overwritten with the updated software.
+
 # Uninstalling
 
 **Mac** 
