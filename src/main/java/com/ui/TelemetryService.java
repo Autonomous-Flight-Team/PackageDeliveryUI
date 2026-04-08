@@ -5,7 +5,7 @@ import org.json.simple.JSONObject;
 
 import com.ui.lib.Position;
 import com.ui.lib.Vector3;
-
+//TODO: remove
 public class TelemetryService {
     Data data;
     Control control;
@@ -23,14 +23,13 @@ public class TelemetryService {
             boolean firstUpdate = true;
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    
                     if (data.isConnectedToDrone()) {
                         if (firstUpdate) {
-                            Platform.runLater(() -> data.setAvailableFlights(control.getAvailableFlights())); // Update flight info
+                            control.getAvailableFlights();
                             firstUpdate = false;
                         }
                         
-                        updateData(control.getTelemetryUpdate());
+                        updateData(data.getDron());
                         // TODO: Add camera streaming functionality.
                         // Platform.runLater(() -> { 
                         //     data.setBottomFrame(control.getBottomCameraView());

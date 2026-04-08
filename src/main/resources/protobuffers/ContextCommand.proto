@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-message Command {
+message ContextCommand {
     uint32 command_index = 1;
     uint32 command_context = 2;
 }

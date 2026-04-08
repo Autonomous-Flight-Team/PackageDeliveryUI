@@ -15,30 +15,25 @@ public abstract class Control {
     // CONNECTION
     // --------------
 
-    protected abstract String dispatchCommand(); // Send the command to the drone, and recieve a string response.
-    // Should implement custom connection logic as defined by the class implementation and setup through the constructor and updates.
-
-    public abstract boolean tryConnectToDrone();
+    public abstract void tryConnectToDrone();
+    public abstract void tryDisconnectFromDrone();
 
     // --------------
     // COMMANDS
     // --------------
 
-    public abstract boolean tryArmDrone(); 
-    public abstract boolean tryDisarmDrone();
-    public abstract boolean tryStartFlight();
-    public abstract boolean tryReturnToHome();
-    public abstract boolean tryLand();
-    public abstract boolean tryKill();
+    public abstract void tryArmDrone(); 
+    public abstract void tryDisarmDrone();
+    public abstract void tryStartFlight();
+    public abstract void tryReturnToHome();
+    public abstract void tryLand();
+    public abstract void tryKill();
 
     // --------------
     // TELEMETRY
     // --------------
 
-    public abstract JSONObject getTelemetryUpdate(); // Update void with command format? Or overload? Research.
-    public abstract Flight[] getAvailableFlights();
-    public abstract BufferedImage getFrontCameraView();
-    public abstract BufferedImage getBottomCameraView();
+    public abstract void getAvailableFlights();
 
     // --------------
     // HEALTH

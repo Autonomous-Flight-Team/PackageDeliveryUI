@@ -44,8 +44,10 @@ public class PacketHeader {
         entry("COMMAND", (byte) 0x04),
         entry("CONTEXT_COMMAND", (byte) 0x05),
         entry("ACKNOWLEDGE", (byte) 0x06),
-        entry("HEARTBEAT", (byte) 0x07),
-        entry("PACKET_DROP_NOTICE", (byte) 0x08)
+        entry("REJECT", (byte) 0x07),
+        entry("HEARTBEAT", (byte) 0x08),
+        entry("PACKET_DROP_NOTICE", (byte) 0x09),
+        entry("DISCONNECT_REQUEST", (byte) 0x10)
     );
 
     // The byte codes for packets that should be added to the map of crit packets

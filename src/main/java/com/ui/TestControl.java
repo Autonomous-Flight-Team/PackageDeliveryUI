@@ -32,48 +32,50 @@ public class TestControl extends Control {
     protected String dispatchCommand() { return ""; }; // Send the command to the drone, and recieve a string response.
     // Should implement custom connection logic as defined by the class implementation and setup through the constructor and updates.
 
-    public boolean tryConnectToDrone() {
+    public void tryConnectToDrone() {
         checkHealthAll();
         Platform.runLater(() -> data.setConnectedToDrone(true));
-        return true;
+    }
+
+    public void tryDisconnectFromDrone() {
+        Platform.runLater(() -> data.setConnectedToDrone(false));
     }
 
     // --------------
     // COMMANDS
     // --------------
 
-    public boolean tryArmDrone() {
+    public void tryArmDrone() {
         Platform.runLater(() -> data.setDroneArmed(true));
         Platform.runLater(() -> data.setFlightStatus("Armed"));
-        return true;
     }
-    public boolean tryDisarmDrone() {
+
+    public void tryDisarmDrone() {
         Platform.runLater(() -> data.setFlightStatus("Unarmed"));
         Platform.runLater(() -> data.setDroneArmed(false));
         Platform.runLater(() -> data.setDroneInFlight(false));
-        return true;
+
     }
-    public boolean tryStartFlight() {
+
+    public void tryStartFlight() {
         Platform.runLater(() -> data.setFlightStatus("Taking Off"));
         Platform.runLater(() -> data.setDroneInFlight(true));
-
-        return true;
     }
-    public boolean tryReturnToHome() {
+
+    public void tryReturnToHome() {
         Platform.runLater(() -> data.setFlightStatus("Returning to Home"));
         Platform.runLater(() -> data.setDroneInFlight(false));
-        return true;
     }
-    public boolean tryLand() {
+
+    public void tryLand() {
         Platform.runLater(() -> data.setFlightStatus("Landing"));
         Platform.runLater(() -> data.setDroneInFlight(false));
-        return true;
     }
-    public boolean tryKill() {
+
+    public void tryKill() {
         Platform.runLater(() -> data.setFlightStatus("Unarmed"));
         Platform.runLater(() -> data.setDroneArmed(false));
         Platform.runLater(() -> data.setDroneInFlight(false));
-        return true;
     }
 
     // --------------
@@ -102,20 +104,12 @@ public class TestControl extends Control {
         return obj;
     }
 
-    public Flight[] getAvailableFlights() {
+    public void getAvailableFlights() {
         Flight[] flights = new Flight[1];
         Position[] waypoints = new Position[1];
         waypoints[0] = new Position(-10,-10, 0);
         flights[0] = new Flight("Example Flight", "The only available flight", new Position(10, 10, 0), new Position(0, 0, 0), new Position(-10, 10, 0), waypoints);
-        return flights;
-    }
-
-    public BufferedImage getFrontCameraView() {
-        return new BufferedImage(0, 0, 0, null);
-    }
-
-    public BufferedImage getBottomCameraView() {
-        return new BufferedImage(0, 0, 0, null);
+        Platform.runLater(() -> data.setAvailableFlights(flights));
     }
 
     // --------------

@@ -220,9 +220,9 @@ public class CommandService extends Broadcaster<Listener> {
             @Override
             protected Void call() throws Exception {
                 logging.logCommand("Updating flight registry");
-                Platform.runLater(() -> {data.setAvailableFlights(control.getAvailableFlights());});
+                Platform.runLater(() -> {control.getAvailableFlights();});
                 Platform.runLater(() -> {data.setSelectedFlight(0);});
-                Platform.runLater(() -> {sendMessage("FLIGHT_UPDATE");});
+                
                 return null;
             }
         };

@@ -49,7 +49,7 @@ enum FlightStatus {
     EMERGENCY = 4;
 }
 
-message Flight {
+message FlightData {
     double elapsed_time_ms = 1;
     string elapsed_time_string = 2;
     double next_target_distance = 3;
@@ -67,6 +67,6 @@ message TelemetryFrame {
     Kinematics kinematics = 1;
     Battery battery = 2;
     Radio radio = 3;
-    Flight flight = 4;
+    FlightData flightData = 4;
     Payload payload = 5;
 }
