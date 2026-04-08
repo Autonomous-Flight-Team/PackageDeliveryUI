@@ -222,7 +222,6 @@ public class CommandService extends Broadcaster<Listener> {
                 logging.logCommand("Updating flight registry");
                 Platform.runLater(() -> {control.getAvailableFlights();});
                 Platform.runLater(() -> {data.setSelectedFlight(0);});
-                
                 return null;
             }
         };

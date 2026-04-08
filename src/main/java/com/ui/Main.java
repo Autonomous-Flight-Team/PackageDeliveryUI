@@ -37,9 +37,8 @@ public class Main extends Application {
     FileManager fileManager;
     Notifications notifications;
 
-    TelemetryService telemetryService;
     CommandService commandService;
-    NetworkService networkService;
+    NetworkHandler networkHandler;
     MapService mapService;
 
     // --------------
@@ -71,13 +70,12 @@ public class Main extends Application {
         control = new TestControl(data);
 
         // Load services
-        telemetryService = new TelemetryService(data, control, settings);
-        networkService = new NetworkService();
+        networkHandler = new NetworkHandler(logging);
         commandService = new CommandService(data, control, logging);
         mapService = new MapService(data, control, settings, logging);
         notifications = new Notifications(stage);
+
         // Start services
-        telemetryService.start();
         mapService.start();
 
         // Load styling
@@ -85,7 +83,7 @@ public class Main extends Application {
 
         // Load pages
         Page connectionPage = new ConnectionPage(data, control, commandService, settings, logging, notifications);
-        Page configurationPage = new ConfigurationPage(data, commandService, mapService, settings, fileManager, notifications);
+        Page configurationPage = new ConfigurationPage(data, commandService, mapService, settings, fileManager, notifications, networkHandler);
         Page calibrationPage = new CalibrationPage(data, commandService, notifications);
         Page flightPage = new FlightPage(data, commandService, mapService, notifications);
         Page cameraPage = new CameraPage(data,commandService, notifications);
@@ -114,7 +112,6 @@ public class Main extends Application {
     public void stop() throws Exception {
         logging.logInfo("Shutting down");
 
-        telemetryService.stop();
         commandService.stop();
         mapService.stop();
         settings.stop();

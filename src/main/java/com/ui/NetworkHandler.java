@@ -1,9 +1,17 @@
 package com.ui;
 
 import com.fazecast.jSerialComm.*;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.proto.Telemetry;
+import com.proto.FlightListOuterClass.Coordinate;
+import com.proto.FlightListOuterClass.FlightList;
+import com.proto.HealthStatusOuterClass.HealthStatus;
+import com.proto.Telemetry.TelemetryFrame;
+import com.proto.TestStatusOuterClass.TestStatus;
 import com.ui.lib.*;
 
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -46,16 +54,19 @@ enum NetworkEvent {
     CONNECTION_RESTABLISH
 }
 
-public class NetworkHandler { 
+public class NetworkHandler extends Broadcaster<Listener> { 
     // CONSTANTS MOVE TO SETTINGS TODO:
     private float communicationTimeout = 5.0f;
     private float connectionTimeout = 10.0f;
     private float timeSinceLastPacket = 0.0f;
 
+    // References
     private NetworkState networkState;
     private NetworkService networkService;
     private Logging logging;
+    private Data data;
 
+    // Network Variables
     private int rxSequence;
     private int txSequence;
 
@@ -340,20 +351,120 @@ public class NetworkHandler {
     } 
     
     private void handleTelemetryPacket(Packet packet) {
-        // 
+        try {
+            TelemetryFrame telemetry = TelemetryFrame.parseFrom(packet.DATA);
+
+            Platform.runLater(() -> {
+                // Kinematics
+                data.setDroneAltitude(telemetry.getKinematics().getAltitude());
+                data.setDroneSpeed(telemetry.getKinematics().getSpeed());
+                data.setDronePositionRelative(new Position(
+                        telemetry.getKinematics().getPositionRelative().getX(),
+                        telemetry.getKinematics().getPositionRelative().getY(),
+                        telemetry.getKinematics().getPositionRelative().getZ()
+                ));
+                data.setDronePositionGlobal(new Position(
+                        telemetry.getKinematics().getPositionGlobal().getLatitude(),
+                        telemetry.getKinematics().getPositionGlobal().getLongitude(),
+                        telemetry.getKinematics().getPositionGlobal().getAltitude()
+                ));
+                data.setDroneVelocity(new Vector3(
+                        telemetry.getKinematics().getVelocity().getX(),
+                        telemetry.getKinematics().getVelocity().getY(),
+                        telemetry.getKinematics().getVelocity().getZ()
+                ));
+                data.setDroneAcceleration(new Vector3(
+                        telemetry.getKinematics().getAcceleration().getX(),
+                        telemetry.getKinematics().getAcceleration().getY(),
+                        telemetry.getKinematics().getAcceleration().getZ()
+                ));
+
+                // Battery
+                data.setDroneBatMaxCapacity(telemetry.getBattery().getMaxCapacity());
+                data.setDroneBatCapacity(telemetry.getBattery().getCurrentCapacity());
+                data.setDroneMotorVoltageDraw(telemetry.getBattery().getMotorVoltageDraw());
+
+                // Radio
+                data.setRadioConnectionBandwidth(telemetry.getRadio().getConnectionBandwidth());
+
+                // Flight
+                data.setFlightElapsedTimeMs(telemetry.getFlightData().getElapsedTimeMs());
+                data.setFlightNextTargetDist(telemetry.getFlightData().getNextTargetDistance());
+                data.setFlightName(telemetry.getFlightData().getName());
+                data.setFlightStatus(telemetry.getFlightData().getStatus().name());
+
+                // Payload
+                data.setPayloadStatus(telemetry.getPayload().getStatus());
+            });
+        } catch (InvalidProtocolBufferException e) {
+            logging.logError("Malformed telemetry packet data recevied");
+        }
     }
 
     private void handleTestsPacket(Packet packet) {
-        // TODO: Add protobuf and extend to rest of packets.
+        try {
+            TestStatus testStatus = TestStatus.parseFrom(packet.DATA);
+            Platform.runLater(() -> {
+                data.setTestStatusMotorSpinAll(testStatus.getMotorSpinAll());
+                data.setTestStatusMotorSpinSeq(testStatus.getMotorSpinSeq());
+                data.setTestStatusPayloadAcq(testStatus.getPayloadActuate());
+            });
+        } catch (InvalidProtocolBufferException e) {
+            logging.logError("Malformed test packet data recevied");
+        }
     }
 
     private void handleHealthPacket(Packet packet) {
-        // TODO: Add protobuf and extend to rest of packets.
+        try {
+            HealthStatus healthStatus = HealthStatus.parseFrom(packet.DATA);
+
+            Platform.runLater(() -> {
+                data.setHealthGps(healthStatus.getGps());
+                data.setHealthBattery(healthStatus.getBat());
+                data.setHealthMotor(healthStatus.getMtr());
+                data.setHealthIMU(healthStatus.getImu());
+                data.setHealthLogging(healthStatus.getLog());
+                data.setHealthCamera(healthStatus.getCam());
+                data.setHealthStorage(healthStatus.getStr());
+                data.setHealthRadio(healthStatus.getRdo());
+                data.setHealthPixhawk(healthStatus.getPhk());
+            });
+        } catch (InvalidProtocolBufferException e) {
+            logging.logError("Malformed health packet data recevied");
+        }
     }
 
     private void handleFlightsPacket(Packet packet) {
-        // TODO: Decode with protobuf, update data, and then make SURE TO SEND OUT FLIGHT UPDATE
-        Platform.runLater(() -> {sendMessage("FLIGHT_UPDATE");});
+        try {
+            FlightList flightList = FlightList.parseFrom(packet.DATA);
+            Flight[] flights = new Flight[flightList.getFlightsCount()];
+
+            for(int i = 0; i < flightList.getFlightsCount(); i++) {
+                com.proto.FlightListOuterClass.Flight flight = flightList.getFlights(i);
+                
+                Position[] waypoints = new Position[flight.getWaypointsCount()];
+                for (int j = 0; j < flight.getWaypointsCount(); j++) {
+                    waypoints[j] = fromCoordinate(flight.getWaypoints(j));
+                }
+
+                flights[i] = new Flight(
+                    flight.getName(),
+                    flight.getDescription(),
+                    fromCoordinate(flight.getHomePosition()),
+                    fromCoordinate(flight.getTargetPosition()),
+                    fromCoordinate(flight.getPayloadPosition()),
+                    waypoints
+                );
+                
+            }
+
+            Platform.runLater(() -> {
+                data.setAvailableFlights(flights);
+                sendMessage("FLIGHT_UPDATE");
+            }); 
+        } catch (InvalidProtocolBufferException e) {
+            logging.logError("Malformed flights packet data recevied");
+        }
     }
 
     private void handleCommandPacket(Packet packet) {
@@ -391,7 +502,21 @@ public class NetworkHandler {
         
     }
 
+    // --------------
+    // HELPERS
+    // --------------
+    
+    private void sendMessage(String message) {
+        logging.logInfo("Broadcasting " + message + ".");
+        // Notify listeners via the BaseSubject's notifyListeners method
+        notifyListeners(listener -> 
+            listener.onMessageReceived(message)
+        );
+    }
 
+    private Position fromCoordinate(Coordinate coord) {
+        return new Position(coord.getLatitude(), coord.getLongitude(), coord.getAltitude());
+    }
 
     private class NetworkService {
         public SerialPort port;

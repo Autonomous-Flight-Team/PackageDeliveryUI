@@ -34,6 +34,7 @@ public class ConfigurationPage implements Page, Listener {
     private CommandService command;
     private FileManager fileManager;
     private MapService mapService;
+    private NetworkHandler networkHandler;
     Notifications notifications;
     private Data data;
     private Settings settings;
@@ -50,15 +51,18 @@ public class ConfigurationPage implements Page, Listener {
     // GENERAL
     // --------------
 
-    public ConfigurationPage(Data data, CommandService command, MapService mapService, Settings settings, FileManager fileManager, Notifications notifications) {
+    public ConfigurationPage(Data data, CommandService command, MapService mapService, 
+                            Settings settings, FileManager fileManager, 
+                            Notifications notifications, NetworkHandler networkHandler) {
         this.command = command;
         this.data = data;
         this.mapService = mapService;
         this.settings = settings;
         this.fileManager = fileManager;
         this.notifications = notifications;
+        this.networkHandler = networkHandler;
 
-        command.addListener(this);
+        networkHandler.addListener(this);
 
         menuPages = new Pane[3]; // Replace with number of pages
         menuPages[0] = flightSelectPanel();
