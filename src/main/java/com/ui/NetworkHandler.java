@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 
 // IMPLEMENTATION
 // State machine.
@@ -56,9 +57,9 @@ enum NetworkEvent {
 
 public class NetworkHandler extends Broadcaster<Listener> { 
     // CONSTANTS MOVE TO SETTINGS TODO:
-    private float communicationTimeout = 5.0f;
-    private float connectionTimeout = 10.0f;
-    private float timeSinceLastPacket = 0.0f;
+    private static final float COMMUNICATION_TIMEOUT = 5.0f;
+    private static final float CONNECTION_TIMEOUT = 10.0f;
+    private int DEFAULT_PACKET_ACKNOWLEDGE_TIME = 5;
 
     // References
     private NetworkState networkState;
@@ -70,12 +71,15 @@ public class NetworkHandler extends Broadcaster<Listener> {
     private int rxSequence;
     private int txSequence;
 
+    private float timeSinceLastPacket = 0.0f;
+
     private final String TARGET_PORT_NAME = "/dev/ttys001";
 
     private static Set<Byte> DROP_CRITICAL_PACKETS = new HashSet<Byte>(Arrays.asList((byte) 0x04, (byte) 0x05, (byte) 0x10));
     private static Set<Byte> OUT_OF_SEQ_PACKETS = new HashSet<Byte>(Arrays.asList((byte) 0x06, (byte) 0x07, (byte) 0x09));
 
     private PacketCache txPacketCache;
+    private Map<Packet, Integer> toAcknowledge = new HashMap<>();
 
     public NetworkHandler(Logging logging) {
         this.logging = logging;
@@ -106,6 +110,31 @@ public class NetworkHandler extends Broadcaster<Listener> {
         });
 
         HeartbeatThread.start();
+    }
+
+    private void AckWatchdog() {
+        Thread AckThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                if(networkState == NetworkState.CONNECTED) {
+                    for(Packet p : toAcknowledge.keySet()) {
+                        if(toAcknowledge.get(p) < 0) {
+                            handleAcknowledgementFailure(p);
+                            toAcknowledge.remove(p);
+                        } else {
+                            toAcknowledge.put(p, toAcknowledge.get(p) - 1);
+                        }
+                    }
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        AckThread.start();
     }
 
     private void RXListener() {
@@ -193,7 +222,7 @@ public class NetworkHandler extends Broadcaster<Listener> {
     public void HandleEvent(NetworkEvent event) {
         switch(event) {
             case CONNECTION_TIMEOUT:
-                handleConnectionTimeout();
+                handleCONNECTION_TIMEOUT();
                 break;
             case CONNECTION_SUCCESS:
                 handleConnectionSuccess();
@@ -213,7 +242,7 @@ public class NetworkHandler extends Broadcaster<Listener> {
         }
     }
 
-    private void handleConnectionTimeout() {
+    private void handleCONNECTION_TIMEOUT() {
         if(networkState == NetworkState.CONNECTED) {
             networkState = NetworkState.CONNECTION_LOSS;
         } else if(networkState == NetworkState.CONNECTING) {
@@ -269,9 +298,9 @@ public class NetworkHandler extends Broadcaster<Listener> {
     private float getTimeout() {
         switch(networkState) {
             case CONNECTING:
-                return connectionTimeout;
+                return CONNECTION_TIMEOUT;
             case CONNECTED:
-                return communicationTimeout;
+                return COMMUNICATION_TIMEOUT;
             default:
                 logging.logError("Sampling timeout out of state");
                 return 100000000;
@@ -282,6 +311,17 @@ public class NetworkHandler extends Broadcaster<Listener> {
     // PACKET HANDLING FUNCTIONS
     // --------------
 
+    private void handleAcknowledgementFailure(Packet p) {
+        switch(p.HEADER.PACKET_TYPE) {
+            case (0x04):
+                HandleTXPacket(p);
+            case (0x05):
+                HandleTXPacket(p);
+            case (0x10):
+                HandleEvent(NetworkEvent.DISCONNECT_SUCCESS);
+        }
+    }
+
     private void handleSendPacket(Packet p) {
         if(!OUT_OF_SEQ_PACKETS.contains(p.HEADER.PACKET_TYPE)) {
             p.HEADER.SEQUENCE_NUMBER = (short) (txSequence + 1);
@@ -289,6 +329,10 @@ public class NetworkHandler extends Broadcaster<Listener> {
             txPacketCache.put(p);
         }
         
+        if(DROP_CRITICAL_PACKETS.contains(p.HEADER.PACKET_TYPE)) {
+            toAcknowledge.put(p, DEFAULT_PACKET_ACKNOWLEDGE_TIME);
+        }
+
         networkService.packetTXQueue.add(p);
     }
 
@@ -563,111 +607,110 @@ public class NetworkHandler extends Broadcaster<Listener> {
                 }
             });
 
-        connectionThread.start();
-    }
+            connectionThread.start();
+        }
     
-    private void StartRX() {
-        Thread RXThread = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                if(port.isOpen()) {
-                    if(port.bytesAvailable() > 1) {
-                        byte[] readBuffer = new byte[2];
+        private void StartRX() {
+            Thread RXThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    if(port.isOpen()) {
+                        if(port.bytesAvailable() > 1) {
+                            byte[] readBuffer = new byte[2];
 
-                        port.readBytes(readBuffer, 2);
+                            port.readBytes(readBuffer, 2);
 
-                        ByteBuffer shortBuff = ByteBuffer.allocate(2);
-                        shortBuff.order(ByteOrder.LITTLE_ENDIAN);
-                        shortBuff.put(readBuffer[0]);
-                        shortBuff.put(readBuffer[1]);
-                        shortBuff.flip();
+                            ByteBuffer shortBuff = ByteBuffer.allocate(2);
+                            shortBuff.order(ByteOrder.LITTLE_ENDIAN);
+                            shortBuff.put(readBuffer[0]);
+                            shortBuff.put(readBuffer[1]);
+                            shortBuff.flip();
 
-                        if((shortBuff.getShort() & 0xFFFF) == 0xF35c) {
-                            readPacketData();
-                        }       
-                    } else {
-                        try{ 
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
+                            if((shortBuff.getShort() & 0xFFFF) == 0xF35c) {
+                                readPacketData();
+                            }       
+                        } else {
+                            try{ 
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        RXThread.start();
-    }
+            RXThread.start();
+        }
 
-    private void StartTX() {
-        Thread TXThread = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                if(port.isOpen() && !packetTXQueue.isEmpty()) {
-                     try {
-                        Packet packet = packetTXQueue.take();
-                        byte[] packetBuffer = packet.toByteEncoding();
-                        port.writeBytes(packetBuffer, packetBuffer.length);
-                    } catch (Exception e) {
-                        Thread.currentThread().interrupt();
+        private void StartTX() {
+            Thread TXThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    if(port.isOpen() && !packetTXQueue.isEmpty()) {
+                        try {
+                            Packet packet = packetTXQueue.take();
+                            byte[] packetBuffer = packet.toByteEncoding();
+                            port.writeBytes(packetBuffer, packetBuffer.length);
+                        } catch (Exception e) {
+                            Thread.currentThread().interrupt();
+                        }
                     }
                 }
+            });
+
+            TXThread.start();
+        }
+
+        // --------------
+        // PACKET FUNCTIONS
+        // --------------
+
+        private void readPacketData() {
+            if(!port.isOpen()) {
+                throw new IllegalStateException();
             }
-        });
+            
+            byte[] lengthCheckBuffer = new byte[2];
 
-        TXThread.start();
-    }
+            port.readBytes(lengthCheckBuffer, 2);
 
-    // --------------
-    // PACKET FUNCTIONS
-    // --------------
+            short length = byteArrayToShort(lengthCheckBuffer);
 
-    private void readPacketData() {
-        if(!port.isOpen()) {
-            throw new IllegalStateException();
-        }
-        
-        byte[] lengthCheckBuffer = new byte[2];
+            byte[] packetBuffer = new byte[length + 7];
+            packetBuffer[0] = (byte)(0xF35C & 0xff);
+            packetBuffer[1] = (byte)((0xF35C >> 8) & 0xff);
+            packetBuffer[2] = lengthCheckBuffer[0];
+            packetBuffer[3] = lengthCheckBuffer[1];
 
-        port.readBytes(lengthCheckBuffer, 2);
-
-        short length = byteArrayToShort(lengthCheckBuffer);
-
-        byte[] packetBuffer = new byte[length + 7];
-        packetBuffer[0] = (byte)(0xF35C & 0xff);
-        packetBuffer[1] = (byte)((0xF35C >> 8) & 0xff);
-        packetBuffer[2] = lengthCheckBuffer[0];
-        packetBuffer[3] = lengthCheckBuffer[1];
-
-        port.readBytes(packetBuffer, length + 3, 4);
-        Packet decodedPacket = new Packet(packetBuffer);
-        
-        packetRXQueue.add(decodedPacket);
-    }
-
-    // --------------
-    // HELPERS
-    // --------------
-
-    private short byteArrayToShort(byte[] byteArr) {
-        if(byteArr.length != 2) {
-            throw new IllegalArgumentException();
+            port.readBytes(packetBuffer, length + 3, 4);
+            Packet decodedPacket = new Packet(packetBuffer);
+            
+            packetRXQueue.add(decodedPacket);
         }
 
-        ByteBuffer shortBuff = ByteBuffer.allocate(2);
-        shortBuff.order(ByteOrder.LITTLE_ENDIAN);
-        shortBuff.put(byteArr[0]);
-        shortBuff.put(byteArr[1]);
-        shortBuff.flip();
+        // --------------
+        // HELPERS
+        // --------------
 
-        return shortBuff.getShort();
-    }
+        private short byteArrayToShort(byte[] byteArr) {
+            if(byteArr.length != 2) {
+                throw new IllegalArgumentException();
+            }
 
-    private byte[] shortToByteArray(short s) {
-        byte[] byteArr = new byte[2];
-        byteArr[0] = (byte)(s & 0xff);
-        byteArr[1] = (byte)((s >> 8) & 0xff);
-        return byteArr;
-    }
+            ByteBuffer shortBuff = ByteBuffer.allocate(2);
+            shortBuff.order(ByteOrder.LITTLE_ENDIAN);
+            shortBuff.put(byteArr[0]);
+            shortBuff.put(byteArr[1]);
+            shortBuff.flip();
 
+            return shortBuff.getShort();
+        }
+
+        private byte[] shortToByteArray(short s) {
+            byte[] byteArr = new byte[2];
+            byteArr[0] = (byte)(s & 0xff);
+            byteArr[1] = (byte)((s >> 8) & 0xff);
+            return byteArr;
+        }
     }
 }
